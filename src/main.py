@@ -34,7 +34,11 @@ def get_selected_template():
     return template if template in VALID_TEMPLATES else 'ticket_detail'
 
 # === Database Configuration ===
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "teamsupport.db"
+DB_PATH = os.getenv("DATABASE_PATH")
+if DB_PATH:
+    DB_PATH = Path(DB_PATH)
+else:
+    DB_PATH = Path(__file__).resolve().parent.parent / "data" / "teamsupport.db"
 
 
 def get_db():

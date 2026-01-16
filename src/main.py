@@ -22,7 +22,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Register Blueprints
-from .blueprints.canned_responses import bp as canned_responses_bp
+from blueprints.canned_responses import bp as canned_responses_bp
 app.register_blueprint(canned_responses_bp)
 
 # === Template Configuration ===
@@ -674,7 +674,7 @@ def set_template():
 @app.route('/ticket/<int:ticket_id>/pdf')
 def ticket_pdf(ticket_id: int):
     """Generate and download PDF summary for a ticket."""
-    from .generate_pdf import generate_ticket_pdf
+    from generate_pdf import generate_ticket_pdf
     
     # Get ticket info
     ticket_info = get_ticket_info(ticket_id)

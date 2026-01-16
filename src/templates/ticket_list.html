@@ -4,587 +4,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Ticket Archive</title>
-
-    <!-- Design Assets -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@100;300;400;500;700&display=swap"
-        rel="stylesheet">
+    <title>Support Archive</title>
+    
+    <!-- Icons & Fonts -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Roboto', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
                         condensed: ['Roboto Condensed', 'sans-serif'],
                     },
                     colors: {
-                        agilent: {
-                            blue: '#0085D5',
-                            dark: '#0B3F63',
-                            light: '#E6F3FA'
+                        // Professional Enterprise Blue (Stripe/Linear vibes)
+                        brand: {
+                            50: '#F5F8FF',
+                            100: '#EBF1FF',
+                            200: '#D6E2FF',
+                            300: '#B3C9FF',
+                            400: '#85A8FF',
+                            500: '#527EDB',
+                            600: '#3561BF',
+                            700: '#264894',
                         },
                         surface: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            200: '#e2e8f0',
-                            300: '#cbd5e1',
-                            400: '#94a3b8',
-                            500: '#64748b',
-                            600: '#475569',
-                            700: '#334155',
-                            800: '#1e293b',
-                            900: '#0f172a',
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827',
                         }
                     },
                     boxShadow: {
-                        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
-                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+                        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Smooth transitions */
-        .ticket-row {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .ticket-row:hover {
-            background-color: #F8FAFC;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            z-index: 10;
-            position: relative;
-        }
-
-        /* Custom Scrollbar for sidebar */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #e2e8f0;
-            border-radius: 20px;
-        }
+        /* Hide scrollbar but keep functionality */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Table Row Hover */
+        .ticket-row { transition: background-color 0.1s ease-in-out; }
+        
+        /* Sidebar Toggle Animation */
+        .sidebar-group-content { transition: max-height 0.3s ease-in-out; }
     </style>
 </head>
 
-<body class="bg-surface-50 text-surface-700 font-sans antialiased h-screen overflow-hidden flex flex-col">
+<body class="bg-surface-50 text-surface-700 font-sans antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- Macros for Facets (Redesigned as Checkbox Style) -->
-    {% macro filter_link(param_name, value, label, count, active_value) %}
-    {% set is_active = value|string == active_value|string %}
-    <a href="{{ url_for('ticket_list', **dict(request.args, **{param_name: value, 'page': 1})) }}"
-        class="group flex items-center justify-between py-1.5 px-2 rounded transition-all duration-200 cursor-pointer select-none mb-0.5 {{ 'bg-agilent-light/50' if is_active else 'hover:bg-surface-100' }}">
-
-        <div class="flex items-center gap-2.5 overflow-hidden">
-            <!-- Simulated Checkbox -->
-            <div
-                class="flex-shrink-0 w-4 h-4 border rounded flex items-center justify-center transition-colors {{ 'bg-agilent-blue border-agilent-blue' if is_active else 'bg-white border-surface-300 group-hover:border-agilent-blue' }}">
-                {% if is_active %}
-                <i class="ph-bold ph-check text-white text-xs"></i>
-                {% endif %}
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-surface-200 h-14 flex-shrink-0 z-50">
+        <div class="w-full mx-auto px-6 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="h-7 w-7 rounded bg-brand-600 flex items-center justify-center text-white shadow-sm">
+                    <i class="ph-bold ph-archive"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-surface-900 text-sm leading-none">Support Archive</h1>
+                </div>
             </div>
 
-            <span
-                class="truncate text-base {{ 'font-medium text-agilent-dark' if is_active else 'text-surface-600 group-hover:text-surface-900' }}"
-                title="{{ label }}">
-                {{ label }}
-            </span>
-        </div>
-
-        <span
-            class="text-sm px-1.5 py-0.5 rounded ml-2 {{ 'bg-agilent-blue text-white font-bold' if is_active else 'bg-surface-100 text-surface-400 group-hover:text-surface-500' }}">
-            {{ count }}
-        </span>
-    </a>
-    {% endmacro %}
-
-    <!-- Top Navigation -->
-    <nav class="bg-white border-b border-surface-200 sticky top-0 z-50 h-16 flex-shrink-0">
-        <div class="max-w-[1600px] mx-auto px-4 h-full">
-            <div class="flex justify-between h-full items-center">
-                <div class="flex items-center gap-4">
-                    <!-- Logo / Icon -->
-                    <a href="/tickets" class="group flex items-center gap-3">
-                        <div class="h-8 w-8 rounded bg-agilent-dark flex items-center justify-center shadow-sm">
-                            <i class="ph-bold ph-archive text-white text-xl"></i>
-                        </div>
-                        <div class="flex flex-col">
-                            <span
-                                class="font-condensed font-bold text-agilent-dark text-xl uppercase tracking-wide leading-none">SAGE
-                                Archive</span>
-                            <span class="text-xs text-surface-500 font-medium uppercase tracking-wider">Support
-                                System</span>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Template Selector & Stats -->
-                <div class="flex items-center gap-4">
-                    <form action="/set-template" method="POST" class="flex items-center gap-2">
-                        <label for="template_select"
-                            class="text-sm font-bold text-surface-400 uppercase tracking-wider font-condensed">Layout:</label>
-                        <div class="relative">
-                            <select id="template_select" name="template" onchange="this.form.submit()"
-                                class="appearance-none pl-3 pr-8 py-1.5 text-sm font-medium text-surface-700 bg-surface-50 border border-surface-200 rounded focus:border-agilent-blue focus:ring-1 focus:ring-agilent-blue cursor-pointer hover:bg-white transition-colors">
-                                <option value="ticket_detail" {% if current_template=='ticket_detail' %}selected{% endif
-                                    %}>Classic</option>
-                                <option value="ticket_detail2" {% if current_template=='ticket_detail2' %}selected{%
-                                    endif %}>Enterprise</option>
-                                <option value="ticket_detail3" {% if current_template=='ticket_detail3' %}selected{%
-                                    endif %}>Premium</option>
-                                <option value="ticket_detail4" {% if current_template=='ticket_detail4' %}selected{%
-                                    endif %}>Premium + Notes</option>
-                            </select>
-                            <i
-                                class="ph-bold ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none text-sm"></i>
-                        </div>
-                    </form>
-                    <div class="h-6 w-px bg-surface-200"></div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-surface-500">
-                            Showing <strong class="text-agilent-dark">{{ filtered_count }}</strong> records
-                        </span>
+            <div class="flex items-center gap-4">
+                 <!-- Template Switcher -->
+                 <form action="/set-template" method="POST" class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-surface-400 uppercase tracking-widest">Layout</span>
+                    <div class="relative group">
+                        <select name="template" onchange="this.form.submit()"
+                            class="appearance-none bg-surface-50 border border-surface-200 text-surface-700 text-xs font-semibold rounded py-1 pl-2 pr-6 focus:outline-none focus:border-brand-500 cursor-pointer hover:bg-white">
+                            <option value="ticket_detail" {% if current_template=='ticket_detail' %}selected{% endif %}>Classic</option>
+                            <option value="ticket_detail2" {% if current_template=='ticket_detail2' %}selected{% endif %}>Enterprise</option>
+                            <option value="ticket_detail3" {% if current_template=='ticket_detail3' %}selected{% endif %}>Premium</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none text-[10px]"></i>
                     </div>
+                </form>
+                <div class="h-4 w-px bg-surface-200"></div>
+                <div class="text-xs font-medium text-surface-500">
+                    <strong class="text-surface-900">{{ filtered_count }}</strong> records
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content with Sidebar -->
-    <div class="max-w-[1600px] mx-auto px-4 py-6 flex-1 min-h-0 flex flex-col w-full">
-        <div class="flex flex-1 min-h-0 gap-6">
-
-            <!-- Sidebar Filters (Enterprise Style) -->
-            <aside class="w-72 flex-shrink-0 flex flex-col gap-4">
-
-                <!-- Filter Panel Container -->
-                <div
-                    class="bg-white rounded-xl shadow-card border border-surface-200 flex flex-col h-full overflow-hidden">
-
-                    <!-- Sidebar Header -->
-                    <div class="p-4 border-b border-surface-200 flex items-center justify-between bg-surface-50/50">
-                        <div class="flex items-center gap-2 text-agilent-dark">
-                            <i class="ph-bold ph-faders text-xl"></i>
-                            <h2 class="text-base font-condensed font-bold uppercase tracking-wider">Filters</h2>
-                        </div>
-                        {% if filters %}
-                        <a href="/tickets{% if search_query %}?q={{ search_query }}{% endif %}"
-                            class="text-sm font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1">
-                            <i class="ph-bold ph-x"></i> Clear
-                        </a>
-                        {% endif %}
-                    </div>
-
-                    <!-- Scrollable Filter Area -->
-                    <div class="overflow-y-auto flex-1 custom-scrollbar p-3">
-
-                        <!-- 1. Status -->
-                        {% if facets.status %}
-                        <div class="mb-6">
-                            <h3
-                                class="px-2 text-sm font-condensed font-bold text-surface-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                <i class="ph-fill ph-toggle-left text-surface-300"></i> Status
-                            </h3>
-                            <div class="space-y-0.5">
-                                {% for item_val, count in facets.status %}
-                                {{ filter_link('status', item_val, item_val, count, filters.status) }}
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- 2. Year & Month -->
-                        {% if facets.year %}
-                        <div class="mb-6">
-                            <h3
-                                class="px-2 text-sm font-condensed font-bold text-surface-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                <i class="ph-fill ph-calendar-blank text-surface-300"></i> Date
-                            </h3>
-                            <div class="space-y-0.5">
-                                {% for item_val, count in facets.year %}
-                                {{ filter_link('year', item_val, item_val, count, filters.year) }}
-                                {% endfor %}
-                            </div>
-                            {% if facets.month and filters.year %}
-                            <div class="mt-2 pl-3 space-y-0.5 border-l-2 border-surface-100 ml-2.5">
-                                <p class="px-2 text-xs font-bold text-surface-400 uppercase mb-1">Months</p>
-                                {% for m_id, m_name, count in facets.month %}
-                                {{ filter_link('month', m_id, m_name, count, filters.month) }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-
-                        <!-- 3. Category -->
-                        {% if facets.category %}
-                        <div class="mb-6">
-                            <h3
-                                class="px-2 text-sm font-condensed font-bold text-surface-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                <i class="ph-fill ph-tag text-surface-300"></i> Category
-                            </h3>
-                            <div class="space-y-0.5">
-                                {% for item_val, count in facets.category[:5] %}
-                                {{ filter_link('category', item_val, item_val, count, filters.category) }}
-                                {% endfor %}
-
-                                {% if facets.category|length > 5 %}
-                                <div id="more-category" class="hidden space-y-0.5">
-                                    {% for item_val, count in facets.category[5:] %}
-                                    {{ filter_link('category', item_val, item_val, count, filters.category) }}
-                                    {% endfor %}
-                                </div>
-                                <button
-                                    onclick="document.getElementById('more-category').classList.remove('hidden'); this.remove();"
-                                    class="w-full text-left px-2 py-1.5 mt-1 text-sm font-bold text-agilent-blue hover:underline flex items-center gap-1 group">
-                                    <i class="ph-bold ph-plus-circle"></i> Show {{ facets.category|length - 5 }} more
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- 4. Subcategory -->
-                        {% if facets.subcategory %}
-                        <div class="mb-6">
-                            <h3
-                                class="px-2 text-sm font-condensed font-bold text-surface-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                <i class="ph-fill ph-git-merge text-surface-300"></i> Subcategory
-                            </h3>
-                            <div class="space-y-0.5">
-                                {% for item_val, count in facets.subcategory[:5] %}
-                                {{ filter_link('subcategory', item_val, item_val, count, filters.subcategory) }}
-                                {% endfor %}
-
-                                {% if facets.subcategory|length > 5 %}
-                                <div id="more-subcategory" class="hidden space-y-0.5">
-                                    {% for item_val, count in facets.subcategory[5:] %}
-                                    {{ filter_link('subcategory', item_val, item_val if item_val else '(None)', count,
-                                    filters.subcategory) }}
-                                    {% endfor %}
-                                </div>
-                                <button
-                                    onclick="document.getElementById('more-subcategory').classList.remove('hidden'); this.remove();"
-                                    class="w-full text-left px-2 py-1.5 mt-1 text-sm font-bold text-agilent-blue hover:underline flex items-center gap-1">
-                                    <i class="ph-bold ph-plus-circle"></i> Show {{ facets.subcategory|length - 5 }} more
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- 5. Agent -->
-                        {% if facets.agent %}
-                        <div class="mb-6">
-                            <h3
-                                class="px-2 text-sm font-condensed font-bold text-surface-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                <i class="ph-fill ph-user text-surface-300"></i> Agent
-                            </h3>
-                            <div class="space-y-0.5">
-                                {% for item_val, count in facets.agent[:5] %}
-                                {{ filter_link('agent', item_val, item_val, count, filters.agent) }}
-                                {% endfor %}
-
-                                {% if facets.agent|length > 5 %}
-                                <div id="more-agent" class="hidden space-y-0.5">
-                                    {% for item_val, count in facets.agent[5:] %}
-                                    {{ filter_link('agent', item_val, item_val, count, filters.agent) }}
-                                    {% endfor %}
-                                </div>
-                                <button
-                                    onclick="document.getElementById('more-agent').classList.remove('hidden'); this.remove();"
-                                    class="w-full text-left px-2 py-1.5 mt-1 text-sm font-bold text-agilent-blue hover:underline flex items-center gap-1">
-                                    <i class="ph-bold ph-plus-circle"></i> Show {{ facets.agent|length - 5 }} more
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- 6. Customer (Bottom) -->
-                        {% if facets.customer %}
-                        <div class="mb-2">
-                            <h3
-                                class="px-2 text-sm font-condensed font-bold text-surface-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                <i class="ph-fill ph-buildings text-surface-300"></i> Customer
-                            </h3>
-                            <div class="space-y-0.5">
-                                {% for item_val, count in facets.customer[:5] %}
-                                {{ filter_link('customer', item_val, item_val, count, filters.customer) }}
-                                {% endfor %}
-                                {% if facets.customer|length > 5 %}
-                                <div id="more-customer" class="hidden space-y-0.5">
-                                    {% for item_val, count in facets.customer[5:] %}
-                                    {{ filter_link('customer', item_val, item_val, count, filters.customer) }}
-                                    {% endfor %}
-                                </div>
-                                <button
-                                    onclick="document.getElementById('more-customer').classList.remove('hidden'); this.remove();"
-                                    class="w-full text-left px-2 py-1.5 mt-1 text-sm font-bold text-agilent-blue hover:underline flex items-center gap-1">
-                                    <i class="ph-bold ph-plus-circle"></i> Show {{ facets.customer|length - 5 }} more
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                    </div>
-
-                    <!-- Sidebar Footer (Optional decoration) -->
-                    <div class="h-1 bg-gradient-to-r from-agilent-blue to-agilent-dark"></div>
-                </div>
-            </aside>
-
-            <!-- Main List Area -->
-            <main class="flex-1 min-w-0 flex flex-col h-full">
-
-                <!-- Header & Controls -->
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                    <div class="flex-1 min-w-0">
-                        <h2 class="text-4xl font-thin text-agilent-dark">
-                            Ticket Archive
-                        </h2>
-                        <p class="mt-1 text-base font-light text-surface-500">
-                            Search and filter historical support requests.
-                        </p>
-                    </div>
-
-                    <!-- Search Bar -->
-                    <div class="flex items-center gap-3 w-full md:w-auto">
-                        <form method="GET" action="/tickets" class="relative w-full md:w-96 group">
-                            <!-- Maintain filters in search -->
-                            {% for k,v in filters.items() %}
-                            <input type="hidden" name="{{ k }}" value="{{ v }}">
-                            {% endfor %}
-
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i
-                                    class="ph-bold ph-magnifying-glass text-surface-400 group-focus-within:text-agilent-blue transition-colors"></i>
-                            </div>
-                            <input type="text" name="q" id="search" value="{{ search_query }}"
-                                class="block w-full pl-10 pr-4 py-2 text-base text-surface-800 bg-white border border-surface-300 rounded shadow-sm placeholder-surface-400 focus:outline-none focus:ring-1 focus:ring-agilent-blue focus:border-agilent-blue transition-shadow"
-                                placeholder="Search by ID, Subject, or Customer...">
-                            {% if search_query %}
-                            <a href="/tickets{% for k,v in filters.items() %}{% if loop.first %}?{% else %}&{% endif %}{{ k }}={{ v }}{% endfor %}"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-surface-400 hover:text-red-500">
-                                <i class="ph-bold ph-x-circle"></i>
-                            </a>
-                            {% endif %}
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Active Filters Tags (Visual Confirmation) -->
+    <!-- Main Layout -->
+    <div class="flex-1 overflow-hidden flex w-full">
+            
+        <!-- SIDEBAR -->
+        <aside class="w-64 flex-shrink-0 border-r border-surface-200 bg-white h-full flex flex-col z-20">
+            <div class="h-14 flex items-center justify-between px-4 border-b border-surface-100 shrink-0">
+                <span class="text-xs font-bold text-surface-900 uppercase tracking-widest flex items-center gap-2">
+                    <i class="ph-bold ph-faders text-brand-600"></i> Filters
+                </span>
                 {% if filters %}
-                <div class="flex items-center gap-2 mb-4 flex-wrap">
-                    <span class="text-sm font-condensed font-bold text-surface-400 uppercase tracking-wider mr-1">Active
-                        Filters:</span>
-                    {% for key, val in filters.items() %}
-                    <a href="{{ url_for('ticket_list', **dict(request.args, **{key: None, 'page': 1})) }}"
-                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-agilent-light text-agilent-dark border border-blue-200 hover:bg-blue-100 transition-colors group">
-                        <span class="font-bold uppercase opacity-60 text-xs">{{ key }}:</span> {{ val }}
-                        <i class="ph-bold ph-x text-agilent-blue group-hover:text-red-600"></i>
-                    </a>
-                    {% endfor %}
+                <a href="/tickets{% if search_query %}?q={{ search_query }}{% endif %}" 
+                   class="text-[10px] font-bold text-red-500 hover:bg-red-50 px-2 py-1 rounded uppercase">Clear</a>
+                {% endif %}
+            </div>
+
+            <div class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-6">
+                <!-- Sidebar Macro -->
+                {% macro facet_group(title, param, items, current_filter) %}
+                {% if items %}
+                <div>
+                    <h3 class="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-2">{{ title }}</h3>
+                    <div class="space-y-0.5">
+                        <!-- Show first 5 -->
+                        {% for item_val, count in items[:5] %}
+                            {% set active = item_val|string == current_filter|string %}
+                            <a href="{{ url_for('ticket_list', **dict(request.args, **{param: item_val, 'page': 1})) }}"
+                               class="group flex items-center justify-between py-1.5 px-2 -mx-2 rounded hover:bg-surface-50 transition-colors {{ 'bg-brand-50' if active }}">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <div class="w-3 h-3 rounded border flex items-center justify-center {{ 'bg-brand-600 border-brand-600' if active else 'bg-white border-surface-300' }}">
+                                        {% if active %}<i class="ph-bold ph-check text-white text-[8px]"></i>{% endif %}
+                                    </div>
+                                    <span class="text-xs font-medium truncate text-surface-600 {{ 'text-brand-700 font-bold' if active }}">{{ item_val }}</span>
+                                </div>
+                                <span class="text-[10px] text-surface-400">{{ count }}</span>
+                            </a>
+                        {% endfor %}
+
+                        <!-- Show Rest (Hidden by default) -->
+                        {% if items|length > 5 %}
+                        <div id="more-{{ param }}" class="hidden space-y-0.5">
+                            {% for item_val, count in items[5:] %}
+                                {% set active = item_val|string == current_filter|string %}
+                                <a href="{{ url_for('ticket_list', **dict(request.args, **{param: item_val, 'page': 1})) }}"
+                                   class="group flex items-center justify-between py-1.5 px-2 -mx-2 rounded hover:bg-surface-50 {{ 'bg-brand-50' if active }}">
+                                    <div class="flex items-center gap-2 overflow-hidden">
+                                        <div class="w-3 h-3 rounded border flex items-center justify-center {{ 'bg-brand-600 border-brand-600' if active else 'bg-white border-surface-300' }}">
+                                            {% if active %}<i class="ph-bold ph-check text-white text-[8px]"></i>{% endif %}
+                                        </div>
+                                        <span class="text-xs font-medium truncate text-surface-600 {{ 'text-brand-700 font-bold' if active }}">{{ item_val }}</span>
+                                    </div>
+                                    <span class="text-[10px] text-surface-400">{{ count }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <button onclick="document.getElementById('more-{{ param }}').classList.toggle('hidden'); this.innerText = this.innerText.includes('Show') ? 'Show Less' : 'Show {{ items|length - 5 }} More'"
+                            class="text-[10px] font-bold text-brand-600 mt-1 hover:underline cursor-pointer bg-transparent border-0 p-0">
+                            Show {{ items|length - 5 }} More
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endif %}
+                {% endmacro %}
 
-                <!-- Data Table -->
-                <div
-                    class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden flex-1 min-h-0 mb-4 flex flex-col">
-                    <div class="overflow-y-auto flex-1 scroll-smooth custom-scrollbar">
-                        <table class="min-w-full divide-y divide-surface-200 border-collapse">
-                            <thead class="bg-surface-50 sticky top-0 z-10 shadow-sm">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-sm font-condensed font-bold text-surface-500 uppercase tracking-wider w-24">
-                                        ID</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-sm font-condensed font-bold text-surface-500 uppercase tracking-wider">
-                                        Subject / Customer</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-sm font-condensed font-bold text-surface-500 uppercase tracking-wider w-48">
-                                        Agent</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-right text-sm font-condensed font-bold text-surface-500 uppercase tracking-wider w-40">
-                                        Date</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-surface-100">
-                                {% for ticket in tickets %}
-                                <tr class="ticket-row cursor-pointer group"
-                                    data-href="{% if ticket.is_kb %}{{ url_for('canned_responses.kb_detail', article_id=ticket.real_id) }}{% else %}/ticket/{{ ticket.ticket_number }}{% endif %}"
-                                    onclick="window.location.href=this.dataset.href">
+                {{ facet_group('Status', 'status', facets.status, filters.status) }}
+                {{ facet_group('Year', 'year', facets.year, filters.year) }}
+                {{ facet_group('Agent', 'agent', facets.agent, filters.agent) }}
+                {{ facet_group('Category', 'category', facets.category, filters.category) }}
+                {{ facet_group('Customer', 'customer', facets.customer, filters.customer) }}
+            </div>
+        </aside>
 
-                                    <!-- Ticket Number -->
-                                    <td class="px-6 py-4 whitespace-nowrap align-top">
-                                        <span
-                                            class="font-mono text-sm font-bold text-surface-600 bg-surface-100 px-2 py-1 rounded border border-surface-200 group-hover:border-agilent-blue group-hover:text-agilent-blue transition-colors">
-                                            {{ ticket.ticket_number }}
-                                        </span>
-                                    </td>
-
-                                    <!-- Subject -->
-                                    <td class="px-6 py-3 align-top">
-                                        <div class="flex flex-col gap-1">
-                                            <a href="{% if ticket.is_kb %}{{ url_for('canned_responses.kb_detail', article_id=ticket.real_id) }}{% else %}/ticket/{{ ticket.ticket_number }}{% endif %}"
-                                                class="text-base font-medium text-agilent-dark hover:text-agilent-blue transition-colors line-clamp-1">
-                                                {{ ticket.ticket_name }}
-                                            </a>
-
-                                            <div class="flex items-center gap-2 text-sm text-surface-500 mt-1">
-                                                <!-- Status Badge -->
-                                                {% if ticket.is_kb %}
-                                                <span
-                                                    class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide border bg-indigo-50 text-indigo-700 border-indigo-200">
-                                                    KB Article
-                                                </span>
-                                                {% else %}
-                                                <span
-                                                    class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide border {{ ticket.status|status_color }}">
-                                                    {{ ticket.status }}
-                                                </span>
-                                                {% endif %}
-
-                                                <span class="text-surface-300">|</span>
-
-                                                <div class="flex items-center gap-1" title="Customer">
-                                                    <i class="ph-bold ph-buildings text-surface-400"></i>
-                                                    <span class="truncate max-w-[200px]">{{ ticket.customers or
-                                                        'Unknown' }}</span>
-                                                </div>
-
-                                                {% if ticket.subcategory %}
-                                                <span class="text-surface-300">|</span>
-                                                <span
-                                                    class="text-surface-500 bg-surface-50 px-1.5 rounded border border-surface-100 truncate max-w-[150px]">
-                                                    {{ ticket.subcategory }}
-                                                </span>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- Agent -->
-                                    <td class="px-6 py-3 whitespace-nowrap align-top">
-                                        <div class="flex items-center gap-2">
-                                            <div
-                                                class="h-6 w-6 rounded bg-gradient-to-br from-surface-100 to-surface-200 border border-surface-300 flex items-center justify-center text-xs font-bold text-surface-600">
-                                                {{ ticket.assigned_to|get_initials }}
-                                            </div>
-                                            <span class="text-sm text-surface-600">{{ ticket.assigned_to or 'Unassigned'
-                                                }}</span>
-                                        </div>
-                                    </td>
-
-                                    <!-- Date -->
-                                    <td class="px-6 py-3 whitespace-nowrap text-right align-top">
-                                        <div class="flex flex-col items-end">
-                                            <span class="text-sm font-medium text-surface-700">{{
-                                                ticket.date_action_created|format_date('%b %d, %Y') }}</span>
-                                            <span class="text-xs text-surface-400">{{
-                                                ticket.date_action_created|format_date('%I:%M %p') }}</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="4" class="px-6 py-20 text-center">
-                                        <div class="flex flex-col items-center justify-center">
-                                            <div
-                                                class="h-16 w-16 bg-surface-50 rounded-full flex items-center justify-center mb-4">
-                                                <i class="ph-duotone ph-magnifying-glass text-4xl text-surface-300"></i>
-                                            </div>
-                                            <h3 class="text-surface-900 font-medium text-xl">No tickets found</h3>
-                                            <p class="text-surface-500 text-base mt-1 max-w-sm">
-                                                We couldn't find any tickets matching your filters or search query.
-                                            </p>
-                                            {% if search_query or filters %}
-                                            <a href="/tickets"
-                                                class="mt-4 px-4 py-2 bg-white border border-surface-300 shadow-sm rounded text-base font-medium text-surface-700 hover:text-agilent-blue hover:border-agilent-blue transition-colors">
-                                                Clear all filters
-                                            </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col min-w-0 bg-surface-50 h-full">
+            
+            <!-- Compact Header -->
+            <header class="px-6 py-4 flex items-center justify-between gap-6 border-b border-surface-200 bg-white shrink-0 h-16">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-bold text-surface-900">All Tickets</h2>
+                    
+                    <!-- Active Filters (Pill Style) -->
+                    {% if filters %}
+                    <div class="h-6 w-px bg-surface-200"></div>
+                    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                        {% for key, val in filters.items() %}
+                        <a href="{{ url_for('ticket_list', **dict(request.args, **{key: None, 'page': 1})) }}"
+                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-50 border border-brand-100 text-xs font-medium text-brand-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors group whitespace-nowrap">
+                            <span class="uppercase text-[9px] font-bold opacity-60">{{ key }}:</span> {{ val }}
+                            <i class="ph-bold ph-x text-[10px]"></i>
+                        </a>
+                        {% endfor %}
                     </div>
-
-                    <!-- Footer Pagination -->
-                    <div class="bg-surface-50 px-6 py-3 border-t border-surface-200 flex items-center justify-between">
-                        <!-- Pagination controls -->
-                        <div class="flex-1 flex items-center justify-between">
-                            <span class="text-sm text-surface-500">
-                                Page <span class="font-bold text-surface-700">{{ page }}</span> of {{ total_pages }}
-                            </span>
-
-                            <nav class="flex items-center gap-1">
-                                <!-- Prev -->
-                                {% if page > 1 %}
-                                <a href="?page={{ page - 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}"
-                                    class="h-8 w-8 flex items-center justify-center rounded bg-white border border-surface-300 text-surface-600 hover:border-agilent-blue hover:text-agilent-blue transition-colors shadow-sm">
-                                    <i class="ph-bold ph-caret-left"></i>
-                                </a>
-                                {% else %}
-                                <span
-                                    class="h-8 w-8 flex items-center justify-center rounded bg-surface-100 border border-surface-200 text-surface-300 cursor-not-allowed">
-                                    <i class="ph-bold ph-caret-left"></i>
-                                </span>
-                                {% endif %}
-
-                                <!-- Simple Page Jump (Condensed) -->
-                                <div class="hidden sm:flex items-center gap-1 mx-2">
-                                    {% set start_page = [1, page - 2] | max %}
-                                    {% set end_page = [total_pages, page + 2] | min %}
-
-                                    {% for p in range(start_page, end_page + 1) %}
-                                    {% if p == page %}
-                                    <span
-                                        class="h-8 w-8 flex items-center justify-center rounded bg-agilent-blue text-white font-bold text-base shadow-sm">{{
-                                        p }}</span>
-                                    {% else %}
-                                    <a href="?page={{ p }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}"
-                                        class="h-8 w-8 flex items-center justify-center rounded bg-white border border-surface-300 text-surface-600 hover:bg-surface-50 text-base transition-colors">{{
-                                        p }}</a>
-                                    {% endif %}
-                                    {% endfor %}
-                                </div>
-
-                                <!-- Next -->
-                                {% if page < total_pages %} <a
-                                    href="?page={{ page + 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}"
-                                    class="h-8 w-8 flex items-center justify-center rounded bg-white border border-surface-300 text-surface-600 hover:border-agilent-blue hover:text-agilent-blue transition-colors shadow-sm">
-                                    <i class="ph-bold ph-caret-right"></i>
-                                    </a>
-                                    {% else %}
-                                    <span
-                                        class="h-8 w-8 flex items-center justify-center rounded bg-surface-100 border border-surface-200 text-surface-300 cursor-not-allowed">
-                                        <i class="ph-bold ph-caret-right"></i>
-                                    </span>
-                                    {% endif %}
-                            </nav>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
 
-            </main>
-        </div>
+                <!-- Compact Search -->
+                <div class="w-80">
+                    <form method="GET" action="/tickets" class="relative">
+                        {% for k,v in filters.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+                        <input type="text" name="q" value="{{ search_query }}"
+                            class="w-full bg-surface-50 border border-surface-200 text-surface-900 text-sm rounded px-3 py-1.5 pl-9 focus:outline-none focus:border-brand-500 focus:bg-white transition-all placeholder:text-surface-400"
+                            placeholder="Search tickets...">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <i class="ph-bold ph-magnifying-glass text-surface-400 text-sm"></i>
+                        </div>
+                    </form>
+                </div>
+            </header>
+
+            <!-- Full Height Table Container -->
+            <div class="flex-1 overflow-hidden relative flex flex-col">
+                <div class="flex-1 overflow-auto no-scrollbar">
+                    <table class="w-full text-left border-collapse table-fixed">
+                        <thead class="bg-surface-50 sticky top-0 z-10 shadow-subtle text-[10px] font-bold text-surface-500 uppercase tracking-widest">
+                            <tr>
+                                <th class="py-2 px-6 border-b border-surface-200 w-24">ID</th>
+                                <th class="py-2 px-6 border-b border-surface-200 w-32">Type</th>
+                                <th class="py-2 px-6 border-b border-surface-200 w-auto">Subject</th>
+                                <th class="py-2 px-6 border-b border-surface-200 w-40">Created</th>
+                                <th class="py-2 px-6 border-b border-surface-200 w-32 text-right">Duration</th>
+                                <th class="py-2 px-6 border-b border-surface-200 w-48">Agent</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-100 bg-white">
+                            {% for ticket in tickets %}
+                            <tr class="ticket-row cursor-pointer hover:bg-brand-50 group"
+                                onclick="window.location.href='{% if ticket.is_kb %}{{ url_for('canned_responses.kb_detail', article_id=ticket.real_id) }}{% else %}/ticket/{{ ticket.ticket_number }}{% endif %}'">
+                                
+                                <!-- 1. ID -->
+                                <td class="py-3 px-6 align-middle">
+                                    <span class="font-mono text-xs font-medium text-surface-500 group-hover:text-brand-600">
+                                        {{ ticket.ticket_number }}
+                                    </span>
+                                </td>
+
+                                <!-- 2. Type (New Column) -->
+                                <td class="py-3 px-6 align-middle">
+                                    <div class="flex items-center gap-1.5">
+                                        {% if ticket.ticket_type == 'Problem' %}
+                                            <i class="ph-fill ph-warning-circle text-orange-500"></i>
+                                        {% elif ticket.ticket_type == 'Question' %}
+                                            <i class="ph-fill ph-question text-blue-500"></i>
+                                        {% else %}
+                                            <i class="ph-fill ph-ticket text-surface-400"></i>
+                                        {% endif %}
+                                        <span class="text-xs text-surface-600 truncate">{{ ticket.ticket_type or 'Ticket' }}</span>
+                                    </div>
+                                </td>
+
+                                <!-- 3. Subject -->
+                                <td class="py-3 px-6 align-middle">
+                                    <div class="flex flex-col">
+                                        <div class="text-sm font-semibold text-surface-900 group-hover:text-brand-700 truncate">
+                                            {{ ticket.ticket_name }}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-xs text-surface-500 mt-0.5">
+                                            <!-- Status Dot -->
+                                            <span class="flex items-center gap-1 font-medium">
+                                                <span class="w-1.5 h-1.5 rounded-full {{ 'bg-surface-400' if 'Closed' in ticket.status else 'bg-green-500' }}"></span>
+                                                {{ ticket.status }}
+                                            </span>
+                                            <span class="text-surface-300">|</span>
+                                            <span class="truncate max-w-[200px]" title="{{ ticket.customers }}">
+                                                {{ ticket.customers or 'Unknown' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- 4. Created Date (New Column) -->
+                                <td class="py-3 px-6 align-middle">
+                                    <span class="text-xs text-surface-600">{{ ticket.date_ticket_created|format_date('%b %d, %Y') }}</span>
+                                </td>
+
+                                <!-- 5. Duration / Days Open (New Column) -->
+                                <td class="py-3 px-6 align-middle text-right">
+                                    {% if ticket.days_open %}
+                                    <span class="inline-flex items-center px-1.5 rounded text-[10px] font-bold bg-surface-100 text-surface-600">
+                                        {{ ticket.days_open }} days
+                                    </span>
+                                    {% else %}
+                                    <span class="text-xs text-surface-400">-</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- 6. Agent -->
+                                <td class="py-3 px-6 align-middle">
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-5 w-5 rounded-full bg-surface-200 flex items-center justify-center text-[9px] font-bold text-surface-600 ring-1 ring-white">
+                                            {{ ticket.assigned_to|get_initials }}
+                                        </div>
+                                        <span class="text-xs text-surface-700 truncate">
+                                            {{ ticket.assigned_to or 'Unassigned' }}
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="py-20 text-center">
+                                    <div class="inline-block p-4 rounded-full bg-surface-50 mb-3">
+                                        <i class="ph-duotone ph-magnifying-glass text-3xl text-surface-300"></i>
+                                    </div>
+                                    <p class="text-surface-900 font-medium">No tickets found</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer (Sticky to bottom of container) -->
+                <div class="border-t border-surface-200 px-6 py-2 bg-white flex items-center justify-between shrink-0 h-12">
+                    <div class="text-xs text-surface-500 font-medium">
+                        Showing <span class="text-surface-900 font-bold">{{ showing_start }}-{{ showing_end }}</span> of {{ filtered_count }}
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        {% if page > 1 %}
+                        <a href="?page={{ page - 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}" 
+                           class="px-2 py-1 flex items-center gap-1 rounded hover:bg-surface-100 text-surface-600 text-xs font-medium transition-colors">
+                            <i class="ph-bold ph-caret-left"></i> Prev
+                        </a>
+                        {% else %}
+                        <span class="px-2 py-1 flex items-center gap-1 rounded text-surface-300 text-xs font-medium cursor-not-allowed">
+                            <i class="ph-bold ph-caret-left"></i> Prev
+                        </span>
+                        {% endif %}
+
+                        <span class="text-xs font-medium text-surface-400 px-2">Page {{ page }}</span>
+
+                        {% if page < total_pages %}
+                        <a href="?page={{ page + 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}" 
+                           class="px-2 py-1 flex items-center gap-1 rounded hover:bg-surface-100 text-surface-600 text-xs font-medium transition-colors">
+                            Next <i class="ph-bold ph-caret-right"></i>
+                        </a>
+                        {% else %}
+                        <span class="px-2 py-1 flex items-center gap-1 rounded text-surface-300 text-xs font-medium cursor-not-allowed">
+                            Next <i class="ph-bold ph-caret-right"></i>
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
 </body>
-
 </html>

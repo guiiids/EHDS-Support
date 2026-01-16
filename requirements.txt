@@ -1,0 +1,6 @@
+flask>=2.0.0
+pandas>=1.5.0
+markupsafe>=2.0.0
+python-dotenv>=1.0.0
+reportlab>=4.0.0
+gunicorn==21.2.0

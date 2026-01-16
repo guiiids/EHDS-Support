@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket #{{ ticket_id }} | Case Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: { 850: '#1e293b' } // Deep slate for headers
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .message-body {
+            white-space: pre-wrap;
+            font-size: 0.925rem;
+            color: #334155;
+        }
+
+        /* Custom Scrollbar for enterprise feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans h-screen flex flex-col overflow-hidden">
+
+    <!-- 1. Enterprise Header: Dense, Dark, Informative -->
+    <header class="bg-white border-b border-slate-200 shadow-sm z-20 flex-shrink-0">
+        <!-- Top Nav -->
+        <div class="px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white font-bold p-1.5 rounded text-xs tracking-wider">AGL</div>
+                <nav class="flex text-sm text-slate-500 gap-2 items-center">
+                    <a href="/tickets" class="hover:text-blue-600">Tickets</a>
+                    <span class="text-slate-300">/</span>
+                    <span class="font-medium text-slate-900">#{{ ticket_id }}</span>
+                </nav>
+            </div>
+            <div class="flex gap-3">
+                <a href="/ticket/{{ ticket_id }}/pdf"
+                    class="px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded shadow-sm hover:bg-emerald-700 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    PDF
+                </a>
+                <button
+                    class="px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded shadow-sm hover:bg-slate-50">Actions</button>
+                <button
+                    class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded shadow-sm hover:bg-blue-700">Edit
+                    Ticket</button>
+            </div>
+        </div>
+
+        <!-- Ticket Title & Context Bar -->
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-start">
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 leading-tight">{{ ticket_info.ticket_name or 'Untitled
+                    Ticket' }}</h1>
+                <div class="flex gap-4 mt-2 text-xs text-slate-500">
+                    <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Created: {{ ticket_info.date_ticket_created|format_date }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            </path>
+                        </svg>
+                        Source: {{ ticket_info.ticket_source or 'Portal' }}
+                    </span>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                    {% if 'Resolved' in ticket_info.status|string or 'Closed' in ticket_info.status|string %} bg-green-100 text-green-800 border border-green-200
+                    {% else %} bg-yellow-100 text-yellow-800 border border-yellow-200 {% endif %}">
+                    {{ ticket_info.status or 'Open' }}
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- CENTER: Activity Stream (The "Timeline") -->
+        <main class="flex-1 overflow-y-auto p-8 bg-slate-50">
+            <div class="max-w-4xl mx-auto">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6 ml-12">Activity History</h3>
+
+                <!-- Timeline Container -->
+                <div
+                    class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+
+                    {% for msg in messages %}
+                    {% set is_agent = msg.role == 'Agent' or 'Support' in msg.action_creator_name or 'Sook' in
+                    msg.action_creator_name or 'Nadia' in msg.action_creator_name or 'William' in
+                    msg.action_creator_name %}
+
+                    <div class="relative flex items-start gap-4 group">
+                        <!-- Timeline Node / Icon -->
+                        <div
+                            class="absolute left-0 mt-5 w-10 h-10 flex items-center justify-center bg-white rounded-full border-2 {% if is_agent %}border-blue-500 text-blue-600{% else %}border-slate-300 text-slate-500{% endif %} shadow-sm z-10">
+                            {% if is_agent %}
+                            <!-- Support Icon -->
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                </path>
+                            </svg>
+                            {% else %}
+                            <!-- User Icon -->
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            {% endif %}
+                        </div>
+
+                        <!-- Card Content -->
+                        <div class="ml-12 w-full">
+                            <!-- Header Info (Above Card) -->
+                            <div class="flex justify-between items-end mb-2 px-1">
+                                <span class="text-xs text-slate-400">{{ msg.date_action_created|format_date }}</span>
+                            </div>
+
+                            <!-- The Card Itself -->
+                            <div
+                                class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+
+                                <!-- Card Header: Integrated Avatar & Meta -->
+                                <div
+                                    class="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <!-- Avatar Initials -->
+                                        <div
+                                            class="w-8 h-8 rounded bg-gradient-to-br {% if is_agent %}from-blue-600 to-blue-700{% else %}from-slate-600 to-slate-700{% endif %} text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                            {{ msg.action_creator_name|get_initials }}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-900">
+                                                {{ msg.action_creator_name }}
+                                            </p>
+                                            <p
+                                                class="text-[10px] uppercase tracking-wide font-medium {% if is_agent %}text-blue-600{% else %}text-slate-500{% endif %}">
+                                                {% if is_agent %}Support Engineer{% else %}Customer{% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="text-xs text-slate-400 bg-white px-2 py-1 rounded border border-slate-100">
+                                        {{ msg.action_type }}
+                                    </div>
+                                </div>
+
+                                <!-- Card Body -->
+                                <div class="p-5 message-body leading-relaxed">
+                                    {{ msg.linkified_description }}
+                                </div>
+
+                                <!-- Card Footer: Attachments or Collapsible History -->
+                                {% if msg.has_signature %}
+                                <div class="bg-slate-50 px-5 py-2 border-t border-slate-100">
+                                    <details class="group/details">
+                                        <summary
+                                            class="text-xs text-slate-400 cursor-pointer hover:text-blue-600 list-none flex items-center gap-1">
+                                            <svg class="w-3 h-3 transition-transform group-open/details:rotate-90"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                            View Quoted Email / Signature
+                                        </summary>
+                                        <div
+                                            class="mt-3 pt-2 text-xs text-slate-500 border-t border-slate-200 message-body">
+                                            {{ msg.full_message }}
+                                        </div>
+                                    </details>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- End of Feed Padding -->
+            <div class="h-20"></div>
+        </main>
+
+        <!-- RIGHT SIDEBAR: Context Panel -->
+        <aside class="w-80 bg-white border-l border-slate-200 overflow-y-auto flex-shrink-0">
+
+            <!-- Section 1: Key SLA & Status (High Priority) -->
+            <div class="p-5 border-b border-slate-100">
+                <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Case Details</h3>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase">Status</p>
+                        <p class="text-sm font-medium text-slate-700">{{ ticket_info.status }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase">Days Open</p>
+                        <p class="text-sm font-medium text-slate-700">{{ ticket_info.days_opened or 'N/A' }} Days</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase">First Response Time</p>
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500 w-3/4"></div>
+                            </div>
+                            <span class="text-xs font-mono text-slate-600">{{ ticket_info.minutes_to_initial_response or
+                                '0'
+                                }} min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: People -->
+            <div class="p-5 border-b border-slate-100">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">People</h3>
+
+                <div class="mb-4">
+                    <p class="text-[10px] text-slate-400 uppercase mb-1">Assigned Agent</p>
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                            {{ ticket_info.assigned_to|get_initials }}
+                        </div>
+                        <p class="text-sm font-medium text-blue-700">{{ ticket_info.assigned_to or 'Unassigned' }}</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase mb-1">Customer / Organization</p>
+                    <p class="text-sm text-slate-700 leading-snug">
+                        {{ ticket_info.customers }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 3: Classification -->
+            <div class="p-5 border-b border-slate-100">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Classification</h3>
+
+                <dl class="space-y-3">
+                    <div class="flex justify-between">
+                        <dt class="text-xs text-slate-500">Type</dt>
+                        <dd class="text-xs font-medium text-slate-900 text-right">{{ ticket_info.ticket_type }}
+                        </dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-xs text-slate-500">Subcategory</dt>
+                        <dd class="text-xs font-medium text-slate-900 text-right">{{ ticket_info.subcategory }}
+                        </dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-xs text-slate-500">Visible on Hub</dt>
+                        <dd class="text-xs font-medium text-slate-900">
+                            {% if ticket_info.is_visible_on_hub == 'TRUE' %}
+                            <span class="text-green-600">Yes</span>
+                            {% else %}
+                            <span class="text-slate-400">No</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Section 4: Timestamps (Low Priority info at bottom) -->
+            <div class="p-5 bg-slate-50 h-full">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Audit Trail</h3>
+                <ul class="text-[11px] text-slate-500 space-y-2">
+                    <li class="flex justify-between">
+                        <span>Created:</span>
+                        <span class="font-mono">{{ ticket_info.date_ticket_created|format_date }}</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span>Closed:</span>
+                        <span class="font-mono">{{ ticket_info.date_closed|format_date }}</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span>Last Modified:</span>
+                        <span class="font-mono">{{ ticket_info.minutes_since_ticket_was_last_modified }} min
+                            ago</span>
+                    </li>
+                </ul>
+            </div>
+
+        </aside>
+    </div>
+
+</body>
+
+</html>

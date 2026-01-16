@@ -1,0 +1,37 @@
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+.coverage
+.pytest_cache/
+
+# Environments
+.env
+.env.local
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project Specific - Data
+# Ignoring all data directory content as it contains large datasets and potential PII
+data/
+# If you want to keep the data folder structure but not files, uncomment the next lines:
+!data/.gitkeep
+
+# Logs
+*.log

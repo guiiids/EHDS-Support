@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KB Article #{{ article.id }} - Knowledge Base</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        surface: {
+                            50: '#fafbfc',
+                            100: '#f4f5f7',
+                            200: '#e1e4e8',
+                            300: '#d1d5db',
+                            400: '#959da5',
+                            500: '#6b7280',
+                            600: '#586069',
+                            700: '#444d56',
+                            800: '#2f363d',
+                            900: '#1b1f23',
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06)',
+                        'elevated': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                        'inner-glow': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom content formatting */
+        .article-content {
+            white-space: pre-wrap;
+            font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.65;
+        }
+
+        /* Smooth scrolling for sidebar */
+        .sidebar-content {
+            scrollbar-width: thin;
+            scrollbar-color: #e1e4e8 transparent;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background-color: #e1e4e8;
+            border-radius: 4px;
+        }
+
+        /* Elegant hover states */
+        .content-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Subtle gradient backgrounds */
+        .header-gradient {
+            background: linear-gradient(to right, #1e40af 0%, #3b82f6 100%);
+        }
+
+        /* Stats card micro-interactions */
+        .stat-item {
+            transition: all 0.15s ease;
+        }
+
+        .stat-item:hover {
+            background-color: rgba(59, 130, 246, 0.04);
+        }
+
+        /* Section divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb 20%, #e5e7eb 80%, transparent);
+        }
+
+        /* Copy button */
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body class="bg-surface-50 text-surface-800 font-sans antialiased selection:bg-brand-100 selection:text-brand-700">
+
+    <!-- Navbar - Clean, professional header -->
+    <nav class="bg-white/95 backdrop-blur-sm border-b border-surface-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('canned_responses.kb_list') }}" class="group flex items-center gap-3">
+                        <div
+                            class="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-400 to-blue-800 flex items-center justify-center shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path
+                                    d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-surface-700 text-base tracking-tight leading-tight">Knowledge
+                                Base</span>
+                            <span class="text-xs text-surface-500 font-medium">iLab Support</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/tickets"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-surface-600 hover:text-brand-600 hover:bg-brand-50 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Back to Articles
+                    </a>
+                    <button onclick="copyArticleContent()"
+                        class="copy-btn group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 shadow-md hover:shadow-lg transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy Content
+                    </button>
+                </div>
+            </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+        <!-- Page Header - Strong visual hierarchy -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div class="space-y-3">
+                    <!-- Article ID & Type badge row -->
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span
+                            class="font-mono text-sm font-bold text-surface-700 bg-surface-100 px-3 py-1.5 rounded-md border border-surface-200 shadow-sm">
+                            #{{ article.ticket_number or article.id }}
+                        </span>
+                        <span class="text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                            {{ article.ticket_type or 'Knowledge Base Article' }}
+                        </span>
+                    </div>
+
+                    <!-- Article Title -->
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-surface-800 tracking-tight leading-tight">
+                        {{ article.title }}
+                    </h1>
+
+                    <!-- Metadata badges -->
+                    <div class="flex items-center gap-3 flex-wrap text-sm">
+                        {% if article.category_name %}
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-100 text-surface-700 font-medium border border-surface-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                            </svg>
+                            {{ article.category_name }}
+                        </span>
+                        {% endif %}
+                        {% if article.kb_category_name %}
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-brand-50 text-brand-700 font-medium border border-brand-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            {{ article.kb_category_name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Article Content - Left Column (2/3) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Article Body Card -->
+                <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden">
+                    <div class="px-8 py-6">
+                        <div class="article-content text-surface-700 text-sm leading-relaxed">{{ article.content }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar - Right Column (1/3) -->
+            <div class="lg:col-span-1">
+                <div class="sticky top-24 space-y-6">
+
+                    <!-- Article Overview Card -->
+                    <div class="bg-surface-900 text-white rounded-xl shadow-elevated overflow-hidden">
+                        <div class="px-6 py-4 border-b border-surface-700">
+                            <h3 class="text-sm font-bold uppercase tracking-wider">Article Overview</h3>
+                        </div>
+                        <div class="px-6 py-5 space-y-5 sidebar-content">
+
+                            <!-- Current Status Section -->
+                            <div>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-surface-400"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <h4 class="text-xs font-semibold text-surface-400 uppercase tracking-wider">
+                                        Metadata</h4>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div class="stat-item rounded-lg px-3 py-2.5 bg-surface-800/50">
+                                        <div class="text-xs text-surface-400 mb-0.5">Last Updated</div>
+                                        <div class="text-sm font-semibold text-white">
+                                            {{ article.date_modified_display }}
+                                        </div>
+                                    </div>
+
+                                    {% if article.date_created %}
+                                    <div class="stat-item rounded-lg px-3 py-2.5 bg-surface-800/50">
+                                        <div class="text-xs text-surface-400 mb-0.5">Created</div>
+                                        <div class="text-sm font-semibold text-white">
+                                            {{ article.date_created_display }}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <!-- Author Section -->
+                            <div>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-surface-400"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <h4 class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Author
+                                    </h4>
+                                </div>
+
+                                <div class="stat-item rounded-lg px-3 py-2.5 bg-surface-800/50">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-800 flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0">
+                                            {{ article.author[:1] if article.author else '?' }}
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="text-sm font-semibold text-white truncate">
+                                                {{ article.author or 'Unknown Author' }}
+                                            </div>
+                                            <div class="text-xs text-surface-400">Content Creator</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if article.kb_parent_category_name %}
+                            <div class="section-divider"></div>
+
+                            <!-- Classification Section -->
+                            <div>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-surface-400"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path
+                                            d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                                    </svg>
+                                    <h4 class="text-xs font-semibold text-surface-400 uppercase tracking-wider">
+                                        Classification</h4>
+                                </div>
+
+                                <div class="stat-item rounded-lg px-3 py-2.5 bg-surface-800/50">
+                                    <div class="text-xs text-surface-400 mb-0.5">Parent Category</div>
+                                    <div class="text-sm font-semibold text-white">
+                                        {{ article.kb_parent_category_name }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function copyArticleContent() {
+            const content = `{{ article.title }}\n\n{{ article.content }}`;
+            navigator.clipboard.writeText(content).then(() => {
+                // Show success feedback
+                const btn = event.currentTarget;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Copied!
+                `;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+    </script>
+
+</body>
+
+</html>

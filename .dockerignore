@@ -1,0 +1,19 @@
+__pycache__
+*.py[cod]
+*$py.class
+.venv
+venv
+.env
+.git
+.gitignore
+.vscode
+.DS_Store
+
+# Large data files not needed for runtime (assuming DBs are built)
+data/*.csv
+data/*.xlsx
+data/*.json
+
+# Keep the DB files
+!data/teamsupport.db
+!data/kb_articles.db

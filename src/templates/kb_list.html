@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base - iLab Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        surface: {
+                            50: '#fafbfc',
+                            100: '#f4f5f7',
+                            200: '#e1e4e8',
+                            300: '#d1d5db',
+                            400: '#959da5',
+                            500: '#6b7280',
+                            600: '#586069',
+                            700: '#444d56',
+                            800: '#2f363d',
+                            900: '#1b1f23',
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06)',
+                        'elevated': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Premium row hover effect - elevate */
+        .kb-row {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .kb-row:hover {
+            background-color: rgba(59, 130, 246, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Subtle gradient backgrounds */
+        .header-gradient {
+            background: linear-gradient(to right, #1e40af 0%, #3b82f6 100%);
+        }
+
+        /* Stats badge animation */
+        .stats-badge {
+            transition: all 0.15s ease;
+        }
+
+        .stats-badge:hover {
+            transform: scale(1.02);
+        }
+
+        /* Sort indicator */
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 4px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .sort-active .sort-indicator {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-surface-50 text-surface-800 font-sans antialiased selection:bg-brand-100 selection:text-brand-700 h-screen overflow-hidden flex flex-col">
+
+    <!-- Top Navigation - Premium Design -->
+    <nav class="bg-white/95 backdrop-blur-sm border-b border-surface-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('canned_responses.kb_list') }}"
+                        class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <!-- Logo / Icon -->
+                        <div
+                            class="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-400 to-blue-800 flex items-center justify-center shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path
+                                    d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29-3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-surface-700 text-base tracking-tight leading-tight">Knowledge
+                                Base</span>
+                            <span class="text-xs text-surface-500 font-medium">iLab Support</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex items-center gap-4">
+                    <div
+                        class="stats-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-100 border border-surface-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-brand-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="text-sm text-surface-600"><strong class="text-surface-700">{{ filtered_count
+                                }}</strong> of <strong class="text-surface-700">{{ total_count }}</strong>
+                            articles</span>
+                    </div>
+                </div>
+            </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 min-h-0 flex flex-col w-full">
+
+        <!-- Header & Controls -->
+        <div class="md:flex md:items-center md:justify-between mb-8">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-surface-700 tracking-tight">
+                    Knowledge Base Articles
+                </h2>
+                <p class="mt-1 text-sm text-surface-500 font-medium">
+                    Search and browse support articles and canned responses.
+                </p>
+            </div>
+        </div>
+
+        <!-- Filters Row -->
+        <div class="mb-6 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex items-center gap-4">
+                <!-- Category Filter -->
+                <form method="GET" action="{{ url_for('canned_responses.kb_list') }}" class="flex items-center gap-2">
+                    <label for="category_filter"
+                        class="text-xs font-semibold text-surface-500 uppercase tracking-wider">Category:</label>
+                    <select id="category_filter" name="category" onchange="this.form.submit()"
+                        class="text-sm font-medium text-surface-700 bg-white border border-surface-200 rounded-lg px-3 py-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer hover:bg-surface-50 transition-colors shadow-sm">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if filter_category==cat %}selected{% endif %}>{{ cat or
+                            '(Uncategorized)' }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="q" value="{{ search_query }}">
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <input type="hidden" name="order" value="{{ sort_order }}">
+                </form>
+
+                {% if filter_category %}
+                <a href="{{ url_for('canned_responses.kb_list') }}?q={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-brand-700 bg-brand-50 hover:bg-brand-100 transition-colors">
+                    <span>{{ filter_category }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Search Group -->
+            <div class="flex items-center gap-3">
+                <form method="GET" action="{{ url_for('canned_responses.kb_list') }}" class="relative w-80 group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-surface-400 group-focus-within:text-brand-500 transition-colors"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="q" id="search" value="{{ search_query }}"
+                        class="block w-full pl-10 pr-12 py-2 text-sm bg-surface-100 border-none rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:bg-white focus:shadow-lg transition-all duration-200 placeholder-surface-500 text-surface-800 font-medium"
+                        placeholder="Search...">
+
+                    <!-- Shortcut Badge (Show when empty) -->
+                    <div id="search-shortcut"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none {% if search_query %}hidden{% endif %}">
+                        <kbd
+                            class="inline-flex items-center border border-surface-200 rounded px-2 text-xs font-sans font-medium text-surface-400">
+                            /
+                        </kbd>
+                    </div>
+
+                    <!-- Clear Button (Show when active) -->
+                    {% if search_query %}
+                    <a href="{{ url_for('canned_responses.kb_list') }}"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-surface-400 hover:text-surface-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    {% endif %}
+
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <input type="hidden" name="order" value="{{ sort_order }}">
+                    <input type="hidden" name="category" value="{{ filter_category }}">
+                </form>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div id="table-container"
+            class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden flex-1 min-h-0 mb-8">
+            <div class="overflow-y-auto h-full scroll-smooth" id="scroll-area">
+                <table class="min-w-full divide-y divide-surface-200 border-collapse">
+                    <thead class="bg-gradient-to-r from-surface-800 to-surface-900 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                <a href="{{ url_for('canned_responses.kb_list') }}?q={{ search_query }}&category={{ filter_category }}&sort=ticket_number&order={% if sort_by == 'ticket_number' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                    class="hover:text-brand-200 transition-colors {% if sort_by == 'ticket_number' %}sort-active{% endif %}">
+                                    #
+                                    <span class="sort-indicator">
+                                        {% if sort_by == 'ticket_number' %}
+                                        {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-2/5">
+                                <a href="{{ url_for('canned_responses.kb_list') }}?q={{ search_query }}&category={{ filter_category }}&sort=title&order={% if sort_by == 'title' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                    class="hover:text-brand-200 transition-colors {% if sort_by == 'title' %}sort-active{% endif %}">
+                                    Article Title
+                                    <span class="sort-indicator">
+                                        {% if sort_by == 'title' %}
+                                        {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                <a href="{{ url_for('canned_responses.kb_list') }}?q={{ search_query }}&category={{ filter_category }}&sort=author&order={% if sort_by == 'author' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                    class="hover:text-brand-200 transition-colors {% if sort_by == 'author' %}sort-active{% endif %}">
+                                    Author
+                                    <span class="sort-indicator">
+                                        {% if sort_by == 'author' %}
+                                        {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                                <a href="{{ url_for('canned_responses.kb_list') }}?q={{ search_query }}&category={{ filter_category }}&sort=date_modified&order={% if sort_by == 'date_modified' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                    class="hover:text-brand-200 transition-colors {% if sort_by == 'date_modified' %}sort-active{% endif %}">
+                                    Last Updated
+                                    <span class="sort-indicator">
+                                        {% if sort_by == 'date_modified' %}
+                                        {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-surface-100">
+                        {% for article in articles %}
+                        <tr class="kb-row cursor-pointer"
+                            data-href="{{ url_for('canned_responses.kb_detail', article_id=article.id) }}"
+                            onclick="window.location.href=this.dataset.href">
+                            <!-- Article Number -->
+                            <td class="px-6 py-4 whitespace-nowrap border-l-3 border-transparent">
+                                <span
+                                    class="font-mono text-sm font-bold text-surface-600 bg-surface-100 px-2.5 py-1 rounded-md">
+                                    {{ article.ticket_number or article.id }}
+                                </span>
+                            </td>
+                            <!-- Title with Category + Type badges -->
+                            <td class="px-6 py-4">
+                                <a href="{{ url_for('canned_responses.kb_detail', article_id=article.id) }}"
+                                    class="text-sm font-semibold text-surface-700 hover:text-brand-600 transition-colors block">
+                                    {{ article.title }}
+                                </a>
+                                <div class="mt-1.5 flex items-center gap-2 flex-wrap text-xs">
+                                    {% if article.category_name %}
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-100 text-surface-600 font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path
+                                                d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                                        </svg>
+                                        {{ article.category_name }}
+                                    </span>
+                                    {% endif %}
+                                    {% if article.ticket_type %}
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 font-medium">
+                                        {{ article.ticket_type }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <!-- Author -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="h-7 w-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-800 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                        {{ article.author[:1] if article.author else '?' }}
+                                    </div>
+                                    <span class="text-sm text-surface-700 font-medium">{{ article.author or 'Unknown'
+                                        }}</span>
+                                </div>
+                            </td>
+                            <!-- Last Updated -->
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <span class="text-sm text-surface-600">{{ article.date_modified_display }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="hidden py-4 text-center">
+                <div class="inline-flex items-center gap-2 text-brand-600 font-medium text-sm">
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    Loading more articles...
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const scrollArea = document.getElementById('scroll-area');
+            const tableBody = scrollArea.querySelector('tbody');
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+            let offset = {{ articles| length
+        }};
+        const limit = 50;
+        let isLoading = false;
+        let hasMore = true;
+
+        // Current filters
+        const searchQuery = "{{ search_query }}";
+        const filterCategory = "{{ filter_category }}";
+        const sortBy = "{{ sort_by }}";
+        const sortOrder = "{{ sort_order }}";
+
+        scrollArea.addEventListener('scroll', function () {
+            if (isLoading || !hasMore) return;
+
+            // Threshold: 100px from the bottom
+            if (scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight < 100) {
+                loadMore();
+            }
+        });
+
+        async function loadMore() {
+            isLoading = true;
+            loadingIndicator.classList.remove('hidden');
+
+            try {
+                const params = new URLSearchParams({
+                    q: searchQuery,
+                    category: filterCategory,
+                    sort: sortBy,
+                    order: sortOrder,
+                    limit: limit,
+                    offset: offset
+                });
+
+                const response = await fetch(`/canned-responses/api/articles?${params.toString()}`);
+                const data = await response.json();
+
+                if (data.articles && data.articles.length > 0) {
+                    data.articles.forEach(article => {
+                        const row = document.createElement('tr');
+                        row.className = 'kb-row cursor-pointer';
+                        row.dataset.href = article.detail_url;
+                        row.onclick = function () { window.location.href = this.dataset.href; };
+
+                        let categoryHtml = '';
+                        if (article.category_name) {
+                            categoryHtml = `
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-100 text-surface-600 font-medium">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                                    </svg>
+                                    ${article.category_name}
+                                </span>`;
+                        }
+
+                        let typeHtml = '';
+                        if (article.ticket_type) {
+                            typeHtml = `
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 font-medium">
+                                    ${article.ticket_type}
+                                </span>`;
+                        }
+
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap border-l-3 border-transparent">
+                                <span class="font-mono text-sm font-bold text-surface-600 bg-surface-100 px-2.5 py-1 rounded-md">
+                                    ${article.ticket_number || article.id}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="${article.detail_url}" class="text-sm font-semibold text-surface-700 hover:text-brand-600 transition-colors block">
+                                    ${article.title}
+                                </a>
+                                <div class="mt-1.5 flex items-center gap-2 flex-wrap text-xs">
+                                    ${categoryHtml}
+                                    ${typeHtml}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <div class="h-7 w-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-800 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                        ${article.author ? article.author.charAt(0) : '?'}
+                                    </div>
+                                    <span class="text-sm text-surface-700 font-medium">${article.author || 'Unknown'}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <span class="text-sm text-surface-600">${article.date_modified_display}</span>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+
+                    offset += data.articles.length;
+                    if (data.articles.length < limit) {
+                        hasMore = false;
+                    }
+                } else {
+                    hasMore = false;
+                }
+            } catch (error) {
+                console.error('Error loading more articles:', error);
+            } finally {
+                isLoading = false;
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+        });
+
+        // Search Shortcut
+        document.addEventListener('keydown', function (e) {
+            // Press '/' to search
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                document.getElementById('search').focus();
+            }
+        });
+
+        const searchInput = document.getElementById('search');
+        const shortcutBadge = document.getElementById('search-shortcut');
+
+        if (searchInput && shortcutBadge) {
+            searchInput.addEventListener('input', function () {
+                if (this.value.length > 0) {
+                    shortcutBadge.classList.add('hidden');
+                } else {
+                    shortcutBadge.classList.remove('hidden');
+                }
+            });
+
+            // Also hide on focus if needed, or keep it until type (Linear style keeps until type)
+            // But if we have a clear button that appears only on reload/server-side check, 
+            // for pure client side aesthetic we might want to hide badge on focus?
+            // Let's hide badge on focus for cleaner look
+            searchInput.addEventListener('focus', () => shortcutBadge.classList.add('opacity-0'));
+            searchInput.addEventListener('blur', () => {
+                if (searchInput.value.length === 0) shortcutBadge.classList.remove('opacity-0');
+            });
+            // Add transition class to badge
+            shortcutBadge.classList.add('transition-opacity', 'duration-200');
+        }
+    </script>
+
+</body>
+
+</html>

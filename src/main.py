@@ -22,7 +22,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Register Blueprints
-from blueprints.canned_responses import bp as canned_responses_bp
+from .blueprints.canned_responses import bp as canned_responses_bp
 app.register_blueprint(canned_responses_bp)
 
 # === Template Configuration ===

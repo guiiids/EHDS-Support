@@ -22,7 +22,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Register Blueprints
-from blueprints.canned_responses import bp as canned_responses_bp
+from .blueprints.canned_responses import bp as canned_responses_bp
 app.register_blueprint(canned_responses_bp)
 
 # === Template Configuration ===
@@ -591,7 +591,7 @@ def ticket_list():
     showing_end = min(start_idx + per_page, filtered_count)
     
     return render_template(
-        'ticket_list.html',
+        'ticket_list2.html',
         tickets=tickets,
         search_query=search_query,
         filters=filters,

@@ -196,16 +196,28 @@ class RequestLogger:
         
         @app.errorhandler(Exception)
         def log_exception(error):
-            """Log unhandled exceptions."""
+            """Log unhandled exceptions and return appropriate error response."""
+            from werkzeug.exceptions import HTTPException, InternalServerError
             import traceback
             
+            # If it's a standard HTTP exception (e.g., 404, 403, 401),
+            # just return it and let Flask handle the response.
+            # These are already logged as warnings in log_request_end.
+            if isinstance(error, HTTPException):
+                return error
+            
+            # For truly unhandled exceptions (500), log the detail and traceback
             self.app_logger.error(
                 f"Unhandled exception on {request.method} {request.path}: {error}"
             )
             self.app_logger.error(traceback.format_exc())
             
-            # Re-raise to let Flask handle the error response
-            raise error
+            # In debug mode, re-raise to show the Flask debugger
+            if app.debug:
+                raise error
+                
+            # Otherwise return a clean 500 error
+            return InternalServerError()
 
 
 def log_function_call(func):

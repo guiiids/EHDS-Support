@@ -56,24 +56,20 @@
     </div>
 
     <!-- Header -->
-    <header
-        class="w-full flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-white/90 backdrop-blur-sm fixed top-0 z-50">
+    <header class="w-full flex items-center justify-between px-8 py-5 border-b border-slate-100 fixed top-0 z-50"
+        style="background-color: #1991d9;">
         <div class="flex items-center gap-3">
-            <!-- Agilent "Spark" Logo (Simplified SVG) -->
-            <svg class="h-6 text-agilent-blue" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L14.4 9.6H22L15.8 14.1L18.2 21.7L12 17.2L5.8 21.7L8.2 14.1L2 9.6H9.6L12 2Z" />
-            </svg>
-            <span class="text-lg font-condensed font-bold tracking-tight text-slate-800">AGILENT <span
-                    class="font-normal text-slate-500">SAGE</span></span>
+            <img src="{{ url_for('static', filename='agilent_cross_lab_white_logo_ilab.png') }}" alt="Agilent iLab"
+                class="h-8">
         </div>
 
         <div class="flex items-center gap-4">
             <div class="text-right hidden sm:block">
-                <p class="text-sm font-bold font-condensed uppercase text-slate-600">Guilherme Vieira Machado</p>
-                <p class="text-xs text-agilent-blue font-medium">Super Admin</p>
+                <p class="text-sm font-bold font-condensed uppercase text-white">Guilherme Vieira Machado</p>
+                <p class="text-xs text-white/80 font-medium">Super Admin</p>
             </div>
             <div
-                class="h-8 w-8 bg-agilent-blue rounded-full text-white flex items-center justify-center font-condensed font-bold text-sm">
+                class="h-8 w-8 bg-white rounded-full text-agilent-blue flex items-center justify-center font-condensed font-bold text-sm">
                 GM
             </div>
         </div>
@@ -89,7 +85,7 @@
             </div>
 
             <h1 class="text-5xl md:text-6xl font-thin text-slate-800 mb-4 tracking-tight">
-               Support Hub
+                Support Hub
             </h1>
             <p class="text-xl font-light text-slate-500">
                 Manage performance, queries, and citation stability.
@@ -119,14 +115,15 @@
                 <p class="text-sm font-light text-slate-500">Browse standard responses and knowledge base articles.</p>
             </a>
 
-            <!-- Card: Analytics -->
-            <a href="#"
-                class="group bg-white border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+            <!-- Card: Help Articles -->
+            <a href="{{ url_for('help_articles.index') }}"
+                class="group bg-white border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center ring-1 ring-slate-100 hover:ring-agilent-blue/20">
                 <i
-                    class="ph-light ph-chart-bar text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
-                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">Analytics
+                    class="ph-light ph-question text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
+                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">Help
+                    Articles
                 </h3>
-                <p class="text-sm font-light text-slate-500">View traffic, usage metrics, and query volume trends.</p>
+                <p class="text-sm font-light text-slate-500">Browse help articles and documentation resources.</p>
             </a>
 
             <!-- Card: Citation Validation -->

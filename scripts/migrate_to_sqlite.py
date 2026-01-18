@@ -23,15 +23,30 @@ import pandas as pd
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 CSV_PATHS = [
+    # 2017
+    DATA_DIR / "All Ticket Actions - 01-2017_06-2017.csv",
+    DATA_DIR / "All Ticket Actions - 07-2017-12-2017.csv",
+    # 2018
+    DATA_DIR / "All Ticket Actions - 01-2018_06-2018.csv",
+    DATA_DIR / "All Ticket Actions - 07-2018_12-2018.csv",
+    # 2019
+    DATA_DIR / "All Ticket Actions - 01-2019_06-2019..csv",  # Note: double dot in filename
+    DATA_DIR / "All Ticket Actions - 07-2019_12-2019.csv",
+    # 2020
     DATA_DIR / "All Ticket Actions - 01-2020_06-2020.csv",
     DATA_DIR / "All Ticket Actions - 07-2020_12-2020.csv",
+    # 2021
     DATA_DIR / "All Ticket Actions - 07-2021_12-2021.csv",
+    # 2022
     DATA_DIR / "All Ticket Actions - 01-2022_06-2022.csv",
     DATA_DIR / "All Ticket Actions - 07-2022_12-2022.csv",
+    # 2023
     DATA_DIR / "All Ticket Actions - 01-2023_06-2023.csv",
     DATA_DIR / "All Ticket Actions - 07-2023_12-2023.csv",
+    # 2024
     DATA_DIR / "All Ticket Actions - 01-2024_06-2024.csv",
     DATA_DIR / "All Ticket Actions - 07-2024_12-2024.csv",
+    # 2025
     DATA_DIR / "All-Ticket-Actions-01-2025_06-2025.csv",
     DATA_DIR / "All-Ticket-Actions-07-2025_12-2025.csv",
 ]

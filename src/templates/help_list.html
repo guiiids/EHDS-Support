@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Articles - iLab Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        surface: {
+                            50: '#fafbfc',
+                            100: '#f4f5f7',
+                            200: '#e1e4e8',
+                            300: '#d1d5db',
+                            400: '#959da5',
+                            500: '#6b7280',
+                            600: '#586069',
+                            700: '#444d56',
+                            800: '#2f363d',
+                            900: '#1b1f23',
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06)',
+                        'elevated': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .help-row {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .help-row:hover {
+            background-color: rgba(59, 130, 246, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .stats-badge {
+            transition: all 0.15s ease;
+        }
+
+        .stats-badge:hover {
+            transform: scale(1.02);
+        }
+
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 4px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .sort-active .sort-indicator {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-surface-50 text-surface-800 font-sans antialiased selection:bg-brand-100 selection:text-brand-700 h-screen overflow-hidden flex flex-col">
+
+    <!-- Top Navigation -->
+    <nav style="background-color: #1991d9;" class="border-b border-white/20 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('help_articles.help_list') }}"
+                        class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <div class="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-white text-base tracking-tight leading-tight">Help
+                                Articles</span>
+                            <span class="text-xs text-white/80 font-medium">iLab Support</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <a href="/"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:text-white hover:bg-white/20 transition-all duration-200 border border-white/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Back to Hub
+                    </a>
+                    <div
+                        class="stats-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 border border-white/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <span class="text-sm text-white"><strong class="text-white">{{ filtered_count
+                                }}</strong> of <strong class="text-white">{{ total_count }}</strong>
+                            articles</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 min-h-0 flex flex-col w-full">
+
+        <!-- Header & Search Controls in One Row -->
+        <div class="md:flex md:items-center md:justify-between mb-8 gap-6">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-surface-700 tracking-tight">
+                    Help Articles
+                </h2>
+                <p class="mt-1 text-sm text-surface-500 font-medium">
+                    Browse comprehensive guides and documentation for iLab system features.
+                </p>
+            </div>
+
+            <!-- Search Box -->
+            <div class="flex items-center gap-3">
+                <form method="GET" action="{{ url_for('help_articles.help_list') }}" class="relative w-80 group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-surface-400 group-focus-within:text-brand-500 transition-colors"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="q" id="search" value="{{ search_query }}"
+                        class="block w-full pl-10 pr-12 py-2 text-sm bg-surface-100 border-none rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:bg-white focus:shadow-lg transition-all duration-200 placeholder-surface-500 text-surface-800 font-medium"
+                        placeholder="Search help articles...">
+
+                    <!-- Shortcut Badge (Show when empty) -->
+                    <div id="search-shortcut"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none {% if search_query %}hidden{% endif %}">
+                        <kbd
+                            class="inline-flex items-center border border-surface-200 rounded px-2 text-xs font-sans font-medium text-surface-400">
+                            /
+                        </kbd>
+                    </div>
+
+                    <!-- Clear Button (Show when active) -->
+                    {% if search_query %}
+                    <a href="{{ url_for('help_articles.help_list') }}"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-surface-400 hover:text-surface-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    {% endif %}
+
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <input type="hidden" name="order" value="{{ sort_order }}">
+                </form>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div id="table-container"
+            class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden flex-1 min-h-0 mb-8">
+            <div class="overflow-y-auto h-full scroll-smooth" id="scroll-area">
+                <table class="min-w-full divide-y divide-surface-200 border-collapse">
+                    <thead class="bg-gradient-to-r from-surface-800 to-surface-900 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                <a href="{{ url_for('help_articles.help_list') }}?q={{ search_query }}&sort=id&order={% if sort_by == 'id' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                    class="hover:text-brand-200 transition-colors {% if sort_by == 'id' %}sort-active{% endif %}">
+                                    #
+                                    <span class="sort-indicator">
+                                        {% if sort_by == 'id' %}
+                                        {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-2/5">
+                                <a href="{{ url_for('help_articles.help_list') }}?q={{ search_query }}&sort=article_title&order={% if sort_by == 'article_title' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                    class="hover:text-brand-200 transition-colors {% if sort_by == 'article_title' %}sort-active{% endif %}">
+                                    Article Title
+                                    <span class="sort-indicator">
+                                        {% if sort_by == 'article_title' %}
+                                        {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                Category
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                Intended Users
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-surface-100">
+                        {% for article in articles %}
+                        <tr class="help-row cursor-pointer" data-href="{{ article|article_url }}"
+                            onclick="window.location.href=this.dataset.href">
+                            <!-- Article ID -->
+                            <td class="px-6 py-4 whitespace-nowrap border-l-3 border-transparent">
+                                <span
+                                    class="font-mono text-sm font-bold text-surface-600 bg-surface-100 px-2.5 py-1 rounded-md">
+                                    {{ article.id }}
+                                </span>
+                            </td>
+                            <!-- Title with breadcrumbs -->
+                            <td class="px-6 py-4">
+                                <a href="{{ article|article_url }}"
+                                    class="text-sm font-semibold text-surface-700 hover:text-brand-600 transition-colors block">
+                                    {{ article.article_title }}
+                                </a>
+                                {% if article.breadcrumbs %}
+                                <div class="mt-1.5 flex items-center gap-1.5 text-xs text-surface-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <a href="/" class="hover:text-brand-600 transition-colors">Hub</a>
+                                    <span>&gt;</span>
+                                    <a href="{{ url_for('help_articles.help_list') }}"
+                                        class="hover:text-brand-600 transition-colors">Support Home</a>
+                                    {% set breadcrumb_parts = article.breadcrumbs.split('>') %}
+                                    {% for part in breadcrumb_parts[1:] %}
+                                    <span>&gt;</span>
+                                    <span class="truncate">{{ part.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <!-- Category -->
+                            <td class="px-6 py-4">
+                                {% if article.category %}
+                                <span
+                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-100 text-surface-600 font-medium text-xs">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path
+                                            d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                                    </svg>
+                                    {{ article.category }}
+                                </span>
+                                {% else %}
+                                <span class="text-xs text-surface-400">—</span>
+                                {% endif %}
+                            </td>
+                            <!-- Intended Users -->
+                            <td class="px-6 py-4">
+                                {% if article.intended_users %}
+                                <div class="flex flex-wrap gap-1">
+                                    {% for user in article.intended_users_list[:2] %}
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 font-medium text-xs">
+                                        {{ user }}
+                                    </span>
+                                    {% endfor %}
+                                    {% if article.intended_users_list|length > 2 %}
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-100 text-surface-600 font-medium text-xs">
+                                        +{{ article.intended_users_list|length - 2 }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <span class="text-xs text-surface-400">All Users</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if not articles %}
+                <div class="text-center py-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-surface-300" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-surface-700">No articles found</h3>
+                    <p class="mt-1 text-sm text-surface-500">Try adjusting your search criteria.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Search Shortcut
+        document.addEventListener('keydown', function (e) {
+            // Press '/' to search
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                document.getElementById('search').focus();
+            }
+        });
+
+        const searchInput = document.getElementById('search');
+        const shortcutBadge = document.getElementById('search-shortcut');
+
+        if (searchInput && shortcutBadge) {
+            searchInput.addEventListener('input', function () {
+                if (this.value.length > 0) {
+                    shortcutBadge.classList.add('hidden');
+                } else {
+                    shortcutBadge.classList.remove('hidden');
+                }
+            });
+
+            searchInput.addEventListener('focus', () => shortcutBadge.classList.add('opacity-0'));
+            searchInput.addEventListener('blur', () => {
+                if (searchInput.value.length === 0) shortcutBadge.classList.remove('opacity-0');
+            });
+            shortcutBadge.classList.add('transition-opacity', 'duration-200');
+        }
+    </script>
+
+</body>
+
+</html>

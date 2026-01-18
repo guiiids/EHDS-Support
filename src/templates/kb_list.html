@@ -94,15 +94,14 @@
     class="bg-surface-50 text-surface-800 font-sans antialiased selection:bg-brand-100 selection:text-brand-700 h-screen overflow-hidden flex flex-col">
 
     <!-- Top Navigation - Premium Design -->
-    <nav class="bg-white/95 backdrop-blur-sm border-b border-surface-200 sticky top-0 z-50">
+    <nav style="background-color: #1991d9;" class="border-b border-white/20 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center gap-3">
+
                     <a href="{{ url_for('canned_responses.kb_list') }}"
                         class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                        <!-- Logo / Icon -->
-                        <div
-                            class="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-400 to-blue-800 flex items-center justify-center shadow-md">
+                        <div class=\"h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center shadow-md\">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20"
                                 fill="currentColor">
                                 <path
@@ -110,24 +109,33 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-surface-700 text-base tracking-tight leading-tight">Knowledge
+                            <span class="font-bold text-white text-base tracking-tight leading-tight">Knowledge
                                 Base</span>
-                            <span class="text-xs text-surface-500 font-medium">iLab Support</span>
+                            <span class="text-xs text-white/80 font-medium">iLab Support</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- Stats -->
                 <div class="flex items-center gap-4">
+                    <a href="/"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:text-white hover:bg-white/20 transition-all duration-200 border border-white/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Back to Hub
+                    </a>
                     <div
-                        class="stats-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-100 border border-surface-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-brand-500" fill="none"
+                        class="stats-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 border border-white/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span class="text-sm text-surface-600"><strong class="text-surface-700">{{ filtered_count
-                                }}</strong> of <strong class="text-surface-700">{{ total_count }}</strong>
+                        <span class="text-sm text-white"><strong class="text-white">{{ filtered_count
+                                }}</strong> of <strong class="text-white">{{ total_count }}</strong>
                             articles</span>
                     </div>
                 </div>
@@ -137,8 +145,8 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 min-h-0 flex flex-col w-full">
 
-        <!-- Header & Controls -->
-        <div class="md:flex md:items-center md:justify-between mb-8">
+        <!-- Header, Filters & Search in One Row -->
+        <div class="mb-8 flex items-start justify-between gap-6">
             <div class="flex-1 min-w-0">
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-surface-700 tracking-tight">
                     Knowledge Base Articles
@@ -147,10 +155,7 @@
                     Search and browse support articles and canned responses.
                 </p>
             </div>
-        </div>
 
-        <!-- Filters Row -->
-        <div class="mb-6 flex flex-wrap gap-4 items-center justify-between">
             <div class="flex items-center gap-4">
                 <!-- Category Filter -->
                 <form method="GET" action="{{ url_for('canned_responses.kb_list') }}" class="flex items-center gap-2">
@@ -180,10 +185,8 @@
                     </svg>
                 </a>
                 {% endif %}
-            </div>
 
-            <!-- Search Group -->
-            <div class="flex items-center gap-3">
+                <!-- Search Box -->
                 <form method="GET" action="{{ url_for('canned_responses.kb_list') }}" class="relative w-80 group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-surface-400 group-focus-within:text-brand-500 transition-colors"

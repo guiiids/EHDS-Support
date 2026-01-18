@@ -5,11 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support Archive</title>
-    
+
     <!-- Icons & Fonts -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;600;700&display=swap"
+        rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -53,14 +55,24 @@
     </script>
     <style>
         /* Hide scrollbar but keep functionality */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         /* Table Row Hover */
-        .ticket-row { transition: background-color 0.1s ease-in-out; }
-        
+        .ticket-row {
+            transition: background-color 0.1s ease-in-out;
+        }
+
         /* Sidebar Toggle Animation */
-        .sidebar-group-content { transition: max-height 0.3s ease-in-out; }
+        .sidebar-group-content {
+            transition: max-height 0.3s ease-in-out;
+        }
     </style>
 </head>
 
@@ -70,6 +82,15 @@
     <nav class="bg-white border-b border-surface-200 h-14 flex-shrink-0 z-50">
         <div class="w-full mx-auto px-6 h-full flex items-center justify-between">
             <div class="flex items-center gap-3">
+                <a href="/"
+                    class="group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-surface-600 hover:text-brand-600 hover:bg-brand-50 transition-all duration-200 border border-surface-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Back to Hub
+                </a>
                 <div class="h-7 w-7 rounded bg-brand-600 flex items-center justify-center text-white shadow-sm">
                     <i class="ph-bold ph-archive"></i>
                 </div>
@@ -79,17 +100,21 @@
             </div>
 
             <div class="flex items-center gap-4">
-                 <!-- Template Switcher -->
-                 <form action="/set-template" method="POST" class="flex items-center gap-2">
+                <!-- Template Switcher -->
+                <form action="/set-template" method="POST" class="flex items-center gap-2">
                     <span class="text-[10px] font-bold text-surface-400 uppercase tracking-widest">Layout</span>
                     <div class="relative group">
                         <select name="template" onchange="this.form.submit()"
                             class="appearance-none bg-surface-50 border border-surface-200 text-surface-700 text-xs font-semibold rounded py-1 pl-2 pr-6 focus:outline-none focus:border-brand-500 cursor-pointer hover:bg-white">
-                            <option value="ticket_detail" {% if current_template=='ticket_detail' %}selected{% endif %}>Classic</option>
-                            <option value="ticket_detail2" {% if current_template=='ticket_detail2' %}selected{% endif %}>Enterprise</option>
-                            <option value="ticket_detail3" {% if current_template=='ticket_detail3' %}selected{% endif %}>Premium</option>
+                            <option value="ticket_detail" {% if current_template=='ticket_detail' %}selected{% endif %}>
+                                Classic</option>
+                            <option value="ticket_detail2" {% if current_template=='ticket_detail2' %}selected{% endif
+                                %}>Enterprise</option>
+                            <option value="ticket_detail3" {% if current_template=='ticket_detail3' %}selected{% endif
+                                %}>Premium</option>
                         </select>
-                        <i class="ph-bold ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none text-[10px]"></i>
+                        <i
+                            class="ph-bold ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none text-[10px]"></i>
                     </div>
                 </form>
                 <div class="h-4 w-px bg-surface-200"></div>
@@ -102,7 +127,7 @@
 
     <!-- Main Layout -->
     <div class="flex-1 overflow-hidden flex w-full">
-            
+
         <!-- SIDEBAR -->
         <aside class="w-64 flex-shrink-0 border-r border-surface-200 bg-white h-full flex flex-col z-20">
             <div class="h-14 flex items-center justify-between px-4 border-b border-surface-100 shrink-0">
@@ -110,8 +135,8 @@
                     <i class="ph-bold ph-faders text-brand-600"></i> Filters
                 </span>
                 {% if filters %}
-                <a href="/tickets{% if search_query %}?q={{ search_query }}{% endif %}" 
-                   class="text-[10px] font-bold text-red-500 hover:bg-red-50 px-2 py-1 rounded uppercase">Clear</a>
+                <a href="/tickets{% if search_query %}?q={{ search_query }}{% endif %}"
+                    class="text-[10px] font-bold text-red-500 hover:bg-red-50 px-2 py-1 rounded uppercase">Clear</a>
                 {% endif %}
             </div>
 
@@ -124,37 +149,44 @@
                     <div class="space-y-0.5">
                         <!-- Show first 5 -->
                         {% for item_val, count in items[:5] %}
-                            {% set active = item_val|string == current_filter|string %}
-                            <a href="{{ url_for('ticket_list', **dict(request.args, **{param: item_val, 'page': 1})) }}"
-                               class="group flex items-center justify-between py-1.5 px-2 -mx-2 rounded hover:bg-surface-50 transition-colors {{ 'bg-brand-50' if active }}">
-                                <div class="flex items-center gap-2 overflow-hidden">
-                                    <div class="w-3 h-3 rounded border flex items-center justify-center {{ 'bg-brand-600 border-brand-600' if active else 'bg-white border-surface-300' }}">
-                                        {% if active %}<i class="ph-bold ph-check text-white text-[8px]"></i>{% endif %}
-                                    </div>
-                                    <span class="text-xs font-medium truncate text-surface-600 {{ 'text-brand-700 font-bold' if active }}">{{ item_val }}</span>
+                        {% set active = item_val|string == current_filter|string %}
+                        <a href="{{ url_for('ticket_list', **dict(request.args, **{param: item_val, 'page': 1})) }}"
+                            class="group flex items-center justify-between py-1.5 px-2 -mx-2 rounded hover:bg-surface-50 transition-colors {{ 'bg-brand-50' if active }}">
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <div
+                                    class="w-3 h-3 rounded border flex items-center justify-center {{ 'bg-brand-600 border-brand-600' if active else 'bg-white border-surface-300' }}">
+                                    {% if active %}<i class="ph-bold ph-check text-white text-[8px]"></i>{% endif %}
                                 </div>
-                                <span class="text-[10px] text-surface-400">{{ count }}</span>
-                            </a>
+                                <span
+                                    class="text-xs font-medium truncate text-surface-600 {{ 'text-brand-700 font-bold' if active }}">{{
+                                    item_val }}</span>
+                            </div>
+                            <span class="text-[10px] text-surface-400">{{ count }}</span>
+                        </a>
                         {% endfor %}
 
                         <!-- Show Rest (Hidden by default) -->
                         {% if items|length > 5 %}
                         <div id="more-{{ param }}" class="hidden space-y-0.5">
                             {% for item_val, count in items[5:] %}
-                                {% set active = item_val|string == current_filter|string %}
-                                <a href="{{ url_for('ticket_list', **dict(request.args, **{param: item_val, 'page': 1})) }}"
-                                   class="group flex items-center justify-between py-1.5 px-2 -mx-2 rounded hover:bg-surface-50 {{ 'bg-brand-50' if active }}">
-                                    <div class="flex items-center gap-2 overflow-hidden">
-                                        <div class="w-3 h-3 rounded border flex items-center justify-center {{ 'bg-brand-600 border-brand-600' if active else 'bg-white border-surface-300' }}">
-                                            {% if active %}<i class="ph-bold ph-check text-white text-[8px]"></i>{% endif %}
-                                        </div>
-                                        <span class="text-xs font-medium truncate text-surface-600 {{ 'text-brand-700 font-bold' if active }}">{{ item_val }}</span>
+                            {% set active = item_val|string == current_filter|string %}
+                            <a href="{{ url_for('ticket_list', **dict(request.args, **{param: item_val, 'page': 1})) }}"
+                                class="group flex items-center justify-between py-1.5 px-2 -mx-2 rounded hover:bg-surface-50 {{ 'bg-brand-50' if active }}">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <div
+                                        class="w-3 h-3 rounded border flex items-center justify-center {{ 'bg-brand-600 border-brand-600' if active else 'bg-white border-surface-300' }}">
+                                        {% if active %}<i class="ph-bold ph-check text-white text-[8px]"></i>{% endif %}
                                     </div>
-                                    <span class="text-[10px] text-surface-400">{{ count }}</span>
-                                </a>
+                                    <span
+                                        class="text-xs font-medium truncate text-surface-600 {{ 'text-brand-700 font-bold' if active }}">{{
+                                        item_val }}</span>
+                                </div>
+                                <span class="text-[10px] text-surface-400">{{ count }}</span>
+                            </a>
                             {% endfor %}
                         </div>
-                        <button onclick="document.getElementById('more-{{ param }}').classList.toggle('hidden'); this.innerText = this.innerText.includes('Show') ? 'Show Less' : 'Show {{ items|length - 5 }} More'"
+                        <button
+                            onclick="document.getElementById('more-{{ param }}').classList.toggle('hidden'); this.innerText = this.innerText.includes('Show') ? 'Show Less' : 'Show {{ items|length - 5 }} More'"
                             class="text-[10px] font-bold text-brand-600 mt-1 hover:underline cursor-pointer bg-transparent border-0 p-0">
                             Show {{ items|length - 5 }} More
                         </button>
@@ -174,19 +206,20 @@
 
         <!-- MAIN CONTENT -->
         <main class="flex-1 flex flex-col min-w-0 bg-surface-50 h-full">
-            
+
             <!-- Compact Header -->
-            <header class="px-6 py-4 flex items-center justify-between gap-6 border-b border-surface-200 bg-white shrink-0 h-16">
+            <header
+                class="px-6 py-4 flex items-center justify-between gap-6 border-b border-surface-200 bg-white shrink-0 h-16">
                 <div class="flex items-center gap-4">
                     <h2 class="text-lg font-bold text-surface-900">All Tickets</h2>
-                    
+
                     <!-- Active Filters (Pill Style) -->
                     {% if filters %}
                     <div class="h-6 w-px bg-surface-200"></div>
                     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
                         {% for key, val in filters.items() %}
                         <a href="{{ url_for('ticket_list', **dict(request.args, **{key: None, 'page': 1})) }}"
-                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-50 border border-brand-100 text-xs font-medium text-brand-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors group whitespace-nowrap">
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-50 border border-brand-100 text-xs font-medium text-brand-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors group whitespace-nowrap">
                             <span class="uppercase text-[9px] font-bold opacity-60">{{ key }}:</span> {{ val }}
                             <i class="ph-bold ph-x text-[10px]"></i>
                         </a>
@@ -213,7 +246,8 @@
             <div class="flex-1 overflow-hidden relative flex flex-col">
                 <div class="flex-1 overflow-auto no-scrollbar">
                     <table class="w-full text-left border-collapse table-fixed">
-                        <thead class="bg-surface-50 sticky top-0 z-10 shadow-subtle text-[10px] font-bold text-surface-500 uppercase tracking-widest">
+                        <thead
+                            class="bg-surface-50 sticky top-0 z-10 shadow-subtle text-[10px] font-bold text-surface-500 uppercase tracking-widest">
                             <tr>
                                 <th class="py-2 px-6 border-b border-surface-200 w-24">ID</th>
                                 <th class="py-2 px-6 border-b border-surface-200 w-32">Type</th>
@@ -227,10 +261,11 @@
                             {% for ticket in tickets %}
                             <tr class="ticket-row cursor-pointer hover:bg-brand-50 group"
                                 onclick="window.location.href='{% if ticket.is_kb %}{{ url_for('canned_responses.kb_detail', article_id=ticket.real_id) }}{% else %}/ticket/{{ ticket.ticket_number }}{% endif %}'">
-                                
+
                                 <!-- 1. ID -->
                                 <td class="py-3 px-6 align-middle">
-                                    <span class="font-mono text-xs font-medium text-surface-500 group-hover:text-brand-600">
+                                    <span
+                                        class="font-mono text-xs font-medium text-surface-500 group-hover:text-brand-600">
                                         {{ ticket.ticket_number }}
                                     </span>
                                 </td>
@@ -239,26 +274,29 @@
                                 <td class="py-3 px-6 align-middle">
                                     <div class="flex items-center gap-1.5">
                                         {% if ticket.ticket_type == 'Problem' %}
-                                            <i class="ph-fill ph-warning-circle text-orange-500"></i>
+                                        <i class="ph-fill ph-warning-circle text-orange-500"></i>
                                         {% elif ticket.ticket_type == 'Question' %}
-                                            <i class="ph-fill ph-question text-blue-500"></i>
+                                        <i class="ph-fill ph-question text-blue-500"></i>
                                         {% else %}
-                                            <i class="ph-fill ph-ticket text-surface-400"></i>
+                                        <i class="ph-fill ph-ticket text-surface-400"></i>
                                         {% endif %}
-                                        <span class="text-xs text-surface-600 truncate">{{ ticket.ticket_type or 'Ticket' }}</span>
+                                        <span class="text-xs text-surface-600 truncate">{{ ticket.ticket_type or
+                                            'Ticket' }}</span>
                                     </div>
                                 </td>
 
                                 <!-- 3. Subject -->
                                 <td class="py-3 px-6 align-middle">
                                     <div class="flex flex-col">
-                                        <div class="text-sm font-semibold text-surface-900 group-hover:text-brand-700 truncate">
+                                        <div
+                                            class="text-sm font-semibold text-surface-900 group-hover:text-brand-700 truncate">
                                             {{ ticket.ticket_name }}
                                         </div>
                                         <div class="flex items-center gap-2 text-xs text-surface-500 mt-0.5">
                                             <!-- Status Dot -->
                                             <span class="flex items-center gap-1 font-medium">
-                                                <span class="w-1.5 h-1.5 rounded-full {{ 'bg-surface-400' if 'Closed' in ticket.status else 'bg-green-500' }}"></span>
+                                                <span
+                                                    class="w-1.5 h-1.5 rounded-full {{ 'bg-surface-400' if 'Closed' in (ticket.status|default('')) else 'bg-green-500' }}"></span>
                                                 {{ ticket.status }}
                                             </span>
                                             <span class="text-surface-300">|</span>
@@ -271,13 +309,15 @@
 
                                 <!-- 4. Created Date (New Column) -->
                                 <td class="py-3 px-6 align-middle">
-                                    <span class="text-xs text-surface-600">{{ ticket.date_ticket_created|format_date('%b %d, %Y') }}</span>
+                                    <span class="text-xs text-surface-600">{{ ticket.date_ticket_created|format_date('%b
+                                        %d, %Y') }}</span>
                                 </td>
 
                                 <!-- 5. Duration / Days Open (New Column) -->
                                 <td class="py-3 px-6 align-middle text-right">
                                     {% if ticket.days_open %}
-                                    <span class="inline-flex items-center px-1.5 rounded text-[10px] font-bold bg-surface-100 text-surface-600">
+                                    <span
+                                        class="inline-flex items-center px-1.5 rounded text-[10px] font-bold bg-surface-100 text-surface-600">
                                         {{ ticket.days_open }} days
                                     </span>
                                     {% else %}
@@ -288,7 +328,8 @@
                                 <!-- 6. Agent -->
                                 <td class="py-3 px-6 align-middle">
                                     <div class="flex items-center gap-2">
-                                        <div class="h-5 w-5 rounded-full bg-surface-200 flex items-center justify-center text-[9px] font-bold text-surface-600 ring-1 ring-white">
+                                        <div
+                                            class="h-5 w-5 rounded-full bg-surface-200 flex items-center justify-center text-[9px] font-bold text-surface-600 ring-1 ring-white">
                                             {{ ticket.assigned_to|get_initials }}
                                         </div>
                                         <span class="text-xs text-surface-700 truncate">
@@ -312,35 +353,39 @@
                 </div>
 
                 <!-- Footer (Sticky to bottom of container) -->
-                <div class="border-t border-surface-200 px-6 py-2 bg-white flex items-center justify-between shrink-0 h-12">
+                <div
+                    class="border-t border-surface-200 px-6 py-2 bg-white flex items-center justify-between shrink-0 h-12">
                     <div class="text-xs text-surface-500 font-medium">
-                        Showing <span class="text-surface-900 font-bold">{{ showing_start }}-{{ showing_end }}</span> of {{ filtered_count }}
+                        Showing <span class="text-surface-900 font-bold">{{ showing_start }}-{{ showing_end }}</span> of
+                        {{ filtered_count }}
                     </div>
 
                     <div class="flex items-center gap-1">
                         {% if page > 1 %}
-                        <a href="?page={{ page - 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}" 
-                           class="px-2 py-1 flex items-center gap-1 rounded hover:bg-surface-100 text-surface-600 text-xs font-medium transition-colors">
+                        <a href="?page={{ page - 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}"
+                            class="px-2 py-1 flex items-center gap-1 rounded hover:bg-surface-100 text-surface-600 text-xs font-medium transition-colors">
                             <i class="ph-bold ph-caret-left"></i> Prev
                         </a>
                         {% else %}
-                        <span class="px-2 py-1 flex items-center gap-1 rounded text-surface-300 text-xs font-medium cursor-not-allowed">
+                        <span
+                            class="px-2 py-1 flex items-center gap-1 rounded text-surface-300 text-xs font-medium cursor-not-allowed">
                             <i class="ph-bold ph-caret-left"></i> Prev
                         </span>
                         {% endif %}
 
                         <span class="text-xs font-medium text-surface-400 px-2">Page {{ page }}</span>
 
-                        {% if page < total_pages %}
-                        <a href="?page={{ page + 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}" 
-                           class="px-2 py-1 flex items-center gap-1 rounded hover:bg-surface-100 text-surface-600 text-xs font-medium transition-colors">
+                        {% if page < total_pages %} <a
+                            href="?page={{ page + 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}"
+                            class="px-2 py-1 flex items-center gap-1 rounded hover:bg-surface-100 text-surface-600 text-xs font-medium transition-colors">
                             Next <i class="ph-bold ph-caret-right"></i>
-                        </a>
-                        {% else %}
-                        <span class="px-2 py-1 flex items-center gap-1 rounded text-surface-300 text-xs font-medium cursor-not-allowed">
-                            Next <i class="ph-bold ph-caret-right"></i>
-                        </span>
-                        {% endif %}
+                            </a>
+                            {% else %}
+                            <span
+                                class="px-2 py-1 flex items-center gap-1 rounded text-surface-300 text-xs font-medium cursor-not-allowed">
+                                Next <i class="ph-bold ph-caret-right"></i>
+                            </span>
+                            {% endif %}
                     </div>
                 </div>
             </div>
@@ -349,4 +394,5 @@
     </div>
 
 </body>
+
 </html>

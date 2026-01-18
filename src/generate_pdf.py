@@ -189,14 +189,14 @@ def create_header_section(styles, ticket_info: dict) -> list:
     # Report branding
     elements.append(Paragraph("SUPPORT TICKET SUMMARY", styles['ReportSubtitle']))
     
-    # Ticket number badge
+    # Ticket number badge (now second and smaller)
     ticket_num = ticket_info.get('ticket_number', 'Unknown')
-    elements.append(Paragraph(f"Ticket #{ticket_num}", styles['ReportTitle']))
-    
-    # Ticket name/subject
+    elements.append(Paragraph(f"Ticket #{ticket_num}", styles['TicketName']))
+       
+    # Ticket name/subject (now first and larger)
     ticket_name = clean_text_for_pdf(ticket_info.get('ticket_name', 'Untitled Ticket'))
-    elements.append(Paragraph(ticket_name, styles['TicketName']))
-    
+    elements.append(Paragraph(ticket_name, styles['ReportTitle']))
+
     # Generation timestamp
     gen_time = datetime.now().strftime('%B %d, %Y at %I:%M %p')
     elements.append(Paragraph(f"Generated: {gen_time}", styles['MessageTime']))

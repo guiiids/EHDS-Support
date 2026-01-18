@@ -105,7 +105,7 @@
             </div>
             <div class="flex flex-col items-end">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-                    {% if 'Resolved' in ticket_info.status|string or 'Closed' in ticket_info.status|string %} bg-green-100 text-green-800 border border-green-200
+                    {% if 'Resolved' in (ticket_info.status|default(''))|string or 'Closed' in (ticket_info.status|default(''))|string %} bg-green-100 text-green-800 border border-green-200
                     {% else %} bg-yellow-100 text-yellow-800 border border-yellow-200 {% endif %}">
                     {{ ticket_info.status or 'Open' }}
                 </span>

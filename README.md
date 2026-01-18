@@ -29,7 +29,32 @@ Before running the app, you must migrate the CSV data to the local database.
 ```bash
 python scripts/migrate_to_sqlite.py
 ```
-> **Note:** This process ingests ~500k+ rows from the CSV exports and creates the `data/teamsupport.db` file (~736 MB). It typically takes 1-2 minutes.
+
+#### Data Sources
+The migration script ingests **17 CSV files** spanning from 2017 to 2025:
+
+| Period | Files |
+|--------|-------|
+| 2017 | `All Ticket Actions - 01-2017_06-2017.csv`, `All Ticket Actions - 07-2017-12-2017.csv` |
+| 2018 | `All Ticket Actions - 01-2018_06-2018.csv`, `All Ticket Actions - 07-2018_12-2018.csv` |
+| 2019 | `All Ticket Actions - 01-2019_06-2019..csv`, `All Ticket Actions - 07-2019_12-2019.csv` |
+| 2020 | `All Ticket Actions - 01-2020_06-2020.csv`, `All Ticket Actions - 07-2020_12-2020.csv` |
+| 2021 | `All Ticket Actions - 07-2021_12-2021.csv` |
+| 2022 | `All Ticket Actions - 01-2022_06-2022.csv`, `All Ticket Actions - 07-2022_12-2022.csv` |
+| 2023 | `All Ticket Actions - 01-2023_06-2023.csv`, `All Ticket Actions - 07-2023_12-2023.csv` |
+| 2024 | `All Ticket Actions - 01-2024_06-2024.csv`, `All Ticket Actions - 07-2024_12-2024.csv` |
+| 2025 | `All-Ticket-Actions-01-2025_06-2025.csv`, `All-Ticket-Actions-07-2025_12-2025.csv` |
+
+#### Migration Statistics (as of January 2026)
+
+| Metric | Value |
+|--------|-------|
+| **Total CSV rows** | 881,152 |
+| **Visible rows (after filtering)** | 763,137 |
+| **Unique tickets** | 177,043 |
+| **Database size** | ~1.09 GB |
+
+> **Note:** The migration filters rows where `Is Visible on Hub == True` and pre-cleans message bodies for runtime efficiency. The process typically takes 2-3 minutes.
 
 ### 4. Run the Application
 
@@ -45,7 +70,7 @@ The server will start at **[http://localhost:5000](http://localhost:5000)**.
 This project is a self-contained archive viewer that consists of three main components ("mini-apps"):
 
 1.  **The Migrator (`scripts/migrate_to_sqlite.py`)**:
-    *   **Input**: Reads 11+ large CSV export files from `data/`.
+    *   **Input**: Reads 17 large CSV export files from `data/` (spanning 2017-2025).
     *   **Processing**: Cleans dirty data, strips email headers/signatures, formats dates, and normalizes whitespace.
     *   **Output**: Produces an optimized SQLite database in `data/teamsupport.db`.
 

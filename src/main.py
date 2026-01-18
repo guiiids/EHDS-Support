@@ -21,9 +21,22 @@ load_dotenv()
 
 app = Flask(__name__)
 
+# === Logging Setup ===
+from .logger import setup_logging, RequestLogger, get_logger, log_info, log_error, log_warning
+
+# Initialize logging (creates logs/ directory and configures handlers)
+logger = setup_logging(app)
+
+# Initialize request logging middleware (tracks all HTTP requests)
+request_logger = RequestLogger(app)
+
 # Register Blueprints
 from .blueprints.canned_responses import bp as canned_responses_bp
+from .blueprints.help_articles import bp as help_articles_bp
+
 app.register_blueprint(canned_responses_bp)
+app.register_blueprint(help_articles_bp)
+logger.info("Blueprints registered: canned_responses, help_articles")
 
 # === Template Configuration ===
 VALID_TEMPLATES = ['ticket_detail', 'ticket_detail2', 'ticket_detail3', 'ticket_detail4']
@@ -33,7 +46,7 @@ def get_selected_template():
     template = os.getenv('TICKET_DETAIL_TEMPLATE', 'ticket_detail')
     return template if template in VALID_TEMPLATES else 'ticket_detail'
 
-# === Database Configuration ===
+# === Database Configuration 
 DB_PATH = os.getenv("DATABASE_PATH")
 if DB_PATH:
     DB_PATH = Path(DB_PATH)
@@ -46,6 +59,7 @@ def get_db():
     if 'db' not in g:
         db_path = Path(DB_PATH)
         if not db_path.exists():
+            log_error(f"Database not found: {DB_PATH}")
             raise FileNotFoundError(
                 f"Database {DB_PATH} not found! Run: python migrate_to_sqlite.py"
             )
@@ -58,8 +72,8 @@ def get_db():
         if kb_path.exists():
             try:
                 g.db.execute(f"ATTACH DATABASE '{kb_path}' AS kb")
-            except sqlite3.OperationalError:
-                pass
+            except sqlite3.OperationalError as e:
+                log_warning(f"Could not attach KB database: {e}")
     return g.db
 
 
@@ -395,9 +409,11 @@ def get_tickets_page(page: int, per_page: int, search_query: str = None, filters
             status,
             subcategory,
             date_action_created,
+            date_ticket_created,
             assigned_to,
             customers,
             ticket_owner,
+            ticket_type,
             0 as is_kb,
             ticket_number as real_id,
             ticket_number as display_id
@@ -412,9 +428,11 @@ def get_tickets_page(page: int, per_page: int, search_query: str = None, filters
             'Canned Response' as status,
             category_name as subcategory,
             COALESCE(date_modified, date_created) as date_action_created,
+            date_created as date_ticket_created,
             author as assigned_to,
             '' as customers,
             'KB' as ticket_owner,
+            'Canned Response' as ticket_type,
             1 as is_kb,
             id as real_id,
             COALESCE(ticket_number, id) as display_id
@@ -439,7 +457,7 @@ def get_tickets_page(page: int, per_page: int, search_query: str = None, filters
     except sqlite3.OperationalError as e:
         if "no such table" in str(e):
             # Fallback
-             print(f"Warning: KB query failed: {e}")
+             log_warning(f"KB query failed, using fallback: {e}")
              sql = f"""
                 SELECT 
                     ticket_number, ticket_name, status, subcategory, date_action_created, assigned_to, customers, ticket_owner, 
@@ -451,6 +469,7 @@ def get_tickets_page(page: int, per_page: int, search_query: str = None, filters
             """
              cursor.execute(sql, t_params + [per_page, offset])
         else:
+            log_error(f"Database query failed: {e}", exc_info=True)
             raise e
             
     rows = cursor.fetchall()
@@ -469,9 +488,9 @@ def get_tickets_page(page: int, per_page: int, search_query: str = None, filters
             'is_kb': bool(row['is_kb']),
             'real_id': row['real_id'],
             # Compatibility fields
-            'ticket_type': 'Canned Response' if row['is_kb'] else 'Ticket',
+            'ticket_type': row['ticket_type'] if row['ticket_type'] else ('Canned Response' if row['is_kb'] else 'Ticket'),
             'ticket_source': 'Knowledge Base' if row['is_kb'] else 'Email',
-            'date_ticket_created': row['date_action_created'],
+            'date_ticket_created': row['date_ticket_created'],
             'date_closed': None
         })
     
@@ -513,7 +532,7 @@ def get_ticket_messages(ticket_id: int) -> list[dict]:
     cursor.execute("""
         SELECT * FROM messages 
         WHERE ticket_number = ? 
-        ORDER BY date_action_created ASC
+        ORDER BY date_action_created DESC
     """, (ticket_id,))
     
     rows = cursor.fetchall()
@@ -611,10 +630,12 @@ def ticket_list():
 @app.route('/ticket/<int:ticket_id>')
 def ticket_detail(ticket_id: int):
     """Ticket detail view with conversation history (lazy loaded)."""
+    log_info(f"Viewing ticket detail", ticket_id=ticket_id)
     
     # Get ticket info
     ticket_info = get_ticket_info(ticket_id)
     if not ticket_info:
+        log_warning(f"Ticket not found", ticket_id=ticket_id)
         return "Ticket not found", 404
     
     # Lazy load messages for this ticket only
@@ -674,25 +695,33 @@ def set_template():
 @app.route('/ticket/<int:ticket_id>/pdf')
 def ticket_pdf(ticket_id: int):
     """Generate and download PDF summary for a ticket."""
-    from generate_pdf import generate_ticket_pdf
+    from .generate_pdf import generate_ticket_pdf
+    
+    log_info(f"PDF download requested", ticket_id=ticket_id)
     
     # Get ticket info
     ticket_info = get_ticket_info(ticket_id)
     if not ticket_info:
+        log_warning(f"PDF generation failed - ticket not found", ticket_id=ticket_id)
         return "Ticket not found", 404
     
     # Get messages for this ticket
     messages = get_ticket_messages(ticket_id)
     
-    # Generate PDF in memory
-    pdf_buffer = generate_ticket_pdf(ticket_info, messages)
-    
-    return send_file(
-        pdf_buffer,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=f'ticket_{ticket_id}_summary.pdf'
-    )
+    try:
+        # Generate PDF in memory
+        pdf_buffer = generate_ticket_pdf(ticket_info, messages)
+        log_info(f"PDF generated successfully", ticket_id=ticket_id, message_count=len(messages))
+        
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'ticket_{ticket_id}_summary.pdf'
+        )
+    except Exception as e:
+        log_error(f"PDF generation failed", ticket_id=ticket_id, error=str(e), exc_info=True)
+        return "Error generating PDF", 500
 
 
 # === Template Filters ===
@@ -739,9 +768,10 @@ def status_color(status):
 if __name__ == '__main__':
     # Check database exists before starting
     if not Path(DB_PATH).exists():
-        print(f"❌ Database {DB_PATH} not found!")
-        print("   Run migration first: python migrate_to_sqlite.py")
+        logger.error(f"Database {DB_PATH} not found!")
+        logger.error("Run migration first: python migrate_to_sqlite.py")
         exit(1)
     
-    print(f"✅ Using database: {DB_PATH}")
+    logger.info(f"Starting development server on port 5525")
+    logger.info(f"Using database: {DB_PATH}")
     app.run(debug=True, port=5525)

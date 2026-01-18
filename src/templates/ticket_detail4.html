@@ -155,7 +155,7 @@
 </head>
 
 <body
-    class="bg-surface-50 text-surface-700 font-sans antialiased selection:bg-agilent-light selection:text-agilent-dark">
+    class="bg-surface-50 text-surface-700 font-sans antialiased selection:bg-agilent-light selection:text-agilent-dark min-h-screen flex flex-col">
 
     <!-- Navbar - Clean, professional header -->
     <nav class="bg-white/95 backdrop-blur-sm border-b border-surface-200 sticky top-0 z-50">
@@ -192,7 +192,7 @@
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1 w-full">
 
         <!-- Page Header - Strong visual hierarchy -->
         <div class="mb-8">
@@ -226,10 +226,10 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
             <!-- LEFT COLUMN: Activity Stream (8 cols) -->
-            <main class="lg:col-span-8 space-y-6">
+            <main class="lg:col-span-8 flex flex-col min-h-[calc(100vh-160px)]">
 
                 <!-- Activity Header -->
                 <div class="flex items-center justify-between pb-4 border-b border-surface-200">
@@ -246,41 +246,8 @@
                     </span>
                 </div>
 
-                <!-- Message Composer - Add new messages -->
-                <div class="bg-white rounded-xl border border-surface-200 shadow-card overflow-hidden">
-                    <div class="px-5 py-4 bg-gradient-to-r from-agilent-light to-white border-b border-surface-200">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="h-10 w-10 rounded-full bg-gradient-to-br from-agilent-blue to-agilent-dark flex items-center justify-center text-white font-bold text-sm shadow-md">
-                                <i class="ph-bold ph-note-pencil text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-surface-700">Add a Note</h3>
-                                <p class="text-xs text-surface-500">Your message will be added to the activity stream
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <textarea id="message-input"
-                            class="message-editor w-full px-4 py-3 rounded-lg border border-surface-200 text-sm text-surface-700 placeholder-surface-400 bg-surface-50"
-                            placeholder="Type your message here... Share updates, notes, or internal comments about this ticket."></textarea>
-                        <div class="flex items-center justify-between mt-4">
-                            <div class="flex items-center gap-2 text-xs text-surface-400">
-                                <i class="ph-bold ph-info"></i>
-                                <span>Messages are stored locally in your browser</span>
-                            </div>
-                            <button id="send-message-btn"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-agilent-blue hover:bg-agilent-dark shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="ph-bold ph-paper-plane-right"></i>
-                                Send Message
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Messages Container -->
-                <div id="messages-container" class="space-y-6">
+                <div id="messages-container" class="flex-1 space-y-6 overflow-y-auto pr-1 pb-6">
                     {% for msg in messages %}
                     {% set is_agent = msg.role == 'Agent' %}
 
@@ -373,14 +340,36 @@
                         <p class="text-surface-400 text-sm mt-1">This ticket has no messages yet. Add the first one
                             above!</p>
                     </div>
-                    {% endfor %}
+                    {% endfor %} 
                 </div>
 
+                <!-- Message Composer - Sticky Bottom -->
+                <div class="sticky bottom-0 bg-white border-t border-surface-200 mt-6 pb-4 px-4 pt-8 pb-6">
+                    <div class="pt-4">
+                        <div
+                            class="bg-surface-50 rounded-xl border border-surface-200 p-3 flex gap-3 items-center focus-within:ring-2 focus-within:ring-agilent-blue/20 focus-within:border-agilent-blue transition-all shadow-sm">
+                            <textarea id="message-input"
+                                class="w-full bg-transparent border-none text-sm text-surface-800 placeholder-surface-400 focus:ring-0 resize-none py-3 px-4 h-14 min-h-[56px] max-h-32"
+                                placeholder="Type a new note..."></textarea>
+                            <button id="send-message-btn"
+                                class="flex-shrink-0 h-11 w-11 rounded-xl bg-gradient-to-br from-agilent-blue to-agilent-dark text-white hover:from-agilent-dark hover:to-agilent-dark shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+                                title="Send message">
+                                <i class="ph-bold ph-paper-plane-right text-lg"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between text-xs text-surface-400 px-1">
+                            <span class="flex items-center gap-1.5">
+                                <i class="ph-bold ph-info text-agilent-blue"></i>
+                                Messages are stored locally
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </main>
 
             <!-- RIGHT COLUMN: Metadata Sidebar (4 cols) -->
-            <aside class="lg:col-span-4">
-                <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden sticky top-24">
+            <aside class="lg:col-span-4 sticky top-24">
+                <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden">
 
                     <!-- Sidebar Header -->
                     <div

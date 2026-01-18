@@ -510,17 +510,17 @@ def get_ticket_info(ticket_id: int) -> dict:
     
     return {
         'ticket_number': row['ticket_number'],
-        'ticket_name': row['ticket_name'],
-        'status': row['status'],
-        'subcategory': row['subcategory'],
+        'ticket_name': row['ticket_name'] or 'Untitled Ticket',
+        'status': row['status'] or 'Unknown',
+        'subcategory': row['subcategory'] or '',
         'date_action_created': row['date_action_created'],
         'date_ticket_created': row['date_ticket_created'],
         'date_closed': row['date_closed'],
-        'ticket_type': row['ticket_type'],
-        'customers': row['customers'],
-        'assigned_to': row['assigned_to'],
-        'ticket_source': row['ticket_source'],
-        'ticket_owner': row['ticket_owner'],
+        'ticket_type': row['ticket_type'] or 'Ticket',
+        'customers': row['customers'] or '',
+        'assigned_to': row['assigned_to'] or 'Unassigned',
+        'ticket_source': row['ticket_source'] or 'Portal',
+        'ticket_owner': row['ticket_owner'] or '',
     }
 
 
@@ -541,12 +541,12 @@ def get_ticket_messages(ticket_id: int) -> list[dict]:
     for row in rows:
         messages.append({
             'ticket_number': row['ticket_number'],
-            'action_creator_name': row['action_creator_name'],
-            'action_type': row['action_type'],
+            'action_creator_name': row['action_creator_name'] or '',
+            'action_type': row['action_type'] or 'Note',
             'date_action_created': row['date_action_created'],
-            'action_description': row['action_description'],
-            'cleaned_description': row['cleaned_description'],
-            'role': row['role'],
+            'action_description': row['action_description'] or '',
+            'cleaned_description': row['cleaned_description'] or '',
+            'role': row['role'] or 'Customer',
         })
     
     return messages

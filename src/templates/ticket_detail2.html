@@ -126,9 +126,10 @@
                     class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
 
                     {% for msg in messages %}
-                    {% set is_agent = msg.role == 'Agent' or 'Support' in msg.action_creator_name or 'Sook' in
-                    msg.action_creator_name or 'Nadia' in msg.action_creator_name or 'William' in
-                    msg.action_creator_name %}
+                    {% set is_agent = msg.role == 'Agent' or
+                    (msg.action_creator_name and ('Support' in msg.action_creator_name or
+                    'Sook' in msg.action_creator_name or 'Nadia' in msg.action_creator_name or
+                    'William' in msg.action_creator_name)) %}
 
                     <div class="relative flex items-start gap-4 group">
                         <!-- Timeline Node / Icon -->
@@ -168,7 +169,9 @@
                                         <!-- Avatar Initials -->
                                         <div
                                             class="w-8 h-8 rounded bg-gradient-to-br {% if is_agent %}from-blue-600 to-blue-700{% else %}from-slate-600 to-slate-700{% endif %} text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                                            {{ msg.action_creator_name|get_initials }}
+                                            {% set initials = msg.action_creator_name|get_initials %}
+                                            {% if initials != '?' and initials != '' %}{{ initials }}{% else %}<i
+                                                class="ph-bold ph-headset text-lg"></i>{% endif %}
                                         </div>
                                         <div>
                                             <p class="text-sm font-semibold text-slate-900">

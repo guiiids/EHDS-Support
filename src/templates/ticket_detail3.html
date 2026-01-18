@@ -252,7 +252,7 @@
                             <div class="relative">
                                 <div
                                     class="h-11 w-11 rounded-full bg-gradient-to-br from-agilent-blue to-agilent-dark flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
-                                    {% set initials = msg['Action Creator Name']|get_initials %}
+                                    {% set initials = msg.action_creator_name|get_initials %}
                                     {% if initials != '?' and initials != '' %}{{ initials }}{% else %}<i
                                         class="ph-bold ph-headset text-lg"></i>{% endif %}
                                 </div>
@@ -264,7 +264,7 @@
                             {% else %}
                             <div
                                 class="h-11 w-11 rounded-full bg-gradient-to-br from-surface-300 to-surface-400 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
-                                {% set initials = msg['Action Creator Name']|get_initials %}
+                                {% set initials = msg.action_creator_name|get_initials %}
                                 {% if initials != '?' and initials != '' %}{{ initials }}{% else %}<i
                                     class="ph-bold ph-user text-lg"></i>{% endif %}
                             </div>

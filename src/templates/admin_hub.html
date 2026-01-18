@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAGE Admin Hub | Agilent</title>
+    <title>iLab Support Hub | Agilent</title>
 
     <!-- Fonts: Roboto & Roboto Condensed -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,7 +79,7 @@
     <main class="flex-grow flex flex-col items-center justify-center pt-28 pb-10 px-6">
 
         <!-- Hero Title -->
-        <div class="text-center mb-16 max-w-2xl relative">
+        <div class="text-center mb-16 max-w-3xl relative">
             <!-- Vertical Dotted Line Decoration -->
             <div class="absolute -left-12 top-0 bottom-0 border-l-2 border-dotted border-slate-200 hidden md:block">
             </div>
@@ -88,7 +88,7 @@
                 Support Hub
             </h1>
             <p class="text-xl font-light text-slate-500">
-                Manage performance, queries, and citation stability.
+                Unified access to historical support tickets, canned responses, and help articles.
             </p>
         </div>
 
@@ -138,25 +138,31 @@
             </a>
 
             <!-- Card: Query History -->
-            <a href="#"
-                class="group bg-white border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
-                <i
-                    class="ph-light ph-clock-counter-clockwise text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
-                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">Query
-                    History</h3>
-                <p class="text-sm font-light text-slate-500">Review past conversations and user sessions.</p>
-            </a>
+            <div
+                class="relative group bg-slate-50 border border-slate-100 rounded-xl p-10 shadow-sm opacity-60 grayscale flex flex-col items-center text-center cursor-not-allowed">
+                <span
+                    class="absolute top-4 right-4 bg-rose-50 text-rose-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-rose-100">
+                    In Development
+                </span>
+                <i class="ph-light ph-plus-circle text-6xl text-slate-400 mb-6"></i>
+                <h3 class="text-lg font-condensed font-bold text-slate-500 uppercase tracking-wide mb-2">Submit New
+                    Ticket
+                </h3>
+                <p class="text-sm font-light text-slate-400">Review past conversations and user sessions.</p>
+            </div>
 
-            <!-- Card: Feedback -->
-            <a href="#"
-                class="group bg-whAdmin Hub
-ite border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
-                <i
-                    class="ph-light ph-thumbs-up text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
-                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">User
-                    Feedback</h3>
-                <p class="text-sm font-light text-slate-500">Analyze user ratings and qualitative feedback.</p>
-            </a>
+            <!-- Card: User Feedback -->
+            <div
+                class="relative group bg-slate-50 border border-slate-100 rounded-xl p-10 shadow-sm opacity-60 grayscale flex flex-col items-center text-center cursor-not-allowed">
+                <span
+                    class="absolute top-4 right-4 bg-rose-50 text-rose-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-rose-100">
+                    In Development
+                </span>
+                <i class="ph-light ph-chart-line-up text-6xl text-slate-400 mb-6"></i>
+                <h3 class="text-lg font-condensed font-bold text-slate-500 uppercase tracking-wide mb-2">Analytics
+                </h3>
+                <p class="text-sm font-light text-slate-400">Analyze user ratings and qualitative feedback.</p>
+            </div>
 
             <!-- Card: Finances -->
             <a href="#"
@@ -168,15 +174,18 @@ ite border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-tra
                 <p class="text-sm font-light text-slate-500">Monitor token usage and operational costs.</p>
             </a>
 
-            <!-- Card: Settings -->
-            <a href="#"
-                class="group bg-white border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
-                <i
-                    class="ph-light ph-sliders-horizontal text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
-                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">
-                    Configuration</h3>
-                <p class="text-sm font-light text-slate-500">Adjust system prompts and model parameters.</p>
-            </a>
+            <!-- Card: Configuration -->
+            <div
+                class="relative group bg-slate-50 border border-slate-100 rounded-xl p-10 shadow-sm opacity-60 grayscale flex flex-col items-center text-center cursor-not-allowed">
+                <span
+                    class="absolute top-4 right-4 bg-rose-50 text-rose-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-rose-100">
+                    In Development
+                </span>
+                <i class="ph-light ph-gear-six text-6xl text-slate-400 mb-6"></i>
+                <h3 class="text-lg font-condensed font-bold text-slate-500 uppercase tracking-wide mb-2">Configuration
+                </h3>
+                <p class="text-sm font-light text-slate-400">Adjust system prompts and model parameters.</p>
+            </div>
 
         </div>
     </main>

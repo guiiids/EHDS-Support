@@ -33,10 +33,12 @@ request_logger = RequestLogger(app)
 # Register Blueprints
 from .blueprints.canned_responses import bp as canned_responses_bp
 from .blueprints.help_articles import bp as help_articles_bp
+from .blueprints.chat_widget import bp as chat_widget_bp
 
 app.register_blueprint(canned_responses_bp)
 app.register_blueprint(help_articles_bp)
-logger.info("Blueprints registered: canned_responses, help_articles")
+app.register_blueprint(chat_widget_bp)
+logger.info("Blueprints registered: canned_responses, help_articles, chat_widget")
 
 # === Template Configuration ===
 VALID_TEMPLATES = ['ticket_detail', 'ticket_detail2', 'ticket_detail3', 'ticket_detail4']

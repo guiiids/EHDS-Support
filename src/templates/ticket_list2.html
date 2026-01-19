@@ -87,7 +87,229 @@
         .sort-active .sort-indicator {
             opacity: 1;
         }
+
+        /* Filter Panel Styles - Glassmorphism */
+        .filter-panel {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            /* Frosted Glass Effect */
+            background: rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.08),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+                0 1px 0 rgba(255, 255, 255, 0.6) inset;
+        }
+
+        .filter-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .filter-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .filter-panel::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 3px;
+        }
+
+        .filter-panel::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0, 0, 0, 0.25);
+        }
+
+        /* Custom Checkbox Styling */
+        .filter-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .filter-checkbox:hover {
+            border-color: #9ca3af;
+        }
+
+        .filter-checkbox:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .filter-checkbox:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Pill Toggle Button Styling */
+        .filter-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid #e5e7eb;
+            background-color: white;
+            color: #6b7280;
+            user-select: none;
+        }
+
+        .filter-pill:hover {
+            border-color: #d1d5db;
+            background-color: #f9fafb;
+        }
+
+        .filter-pill.active {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            color: #2563eb;
+        }
+
+        .filter-pill input[type="checkbox"] {
+            display: none;
+        }
+
+        /* Section header styling */
+        .filter-section-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+
+        /* Clear filters button */
+        .clear-filters-btn {
+            font-size: 12px;
+            color: #9ca3af;
+            transition: color 0.15s ease;
+        }
+
+        .clear-filters-btn:hover {
+            color: #6b7280;
+        }
+
+        /* Mobile filter toggle */
+        @media (max-width: 1024px) {
+            .filter-panel-wrapper {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 40;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .filter-panel-wrapper.open {
+                transform: translateX(0);
+            }
+
+            .filter-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.3);
+                z-index: 35;
+            }
+
+            .filter-overlay.open {
+                display: block;
+            }
+        }
+
+        /* Desktop Filter Panel Toggle */
+        @media (min-width: 1025px) {
+            .filter-panel-wrapper {
+                transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+            }
+
+            .filter-panel-wrapper.collapsed {
+                width: 0 !important;
+                opacity: 0;
+                overflow: hidden;
+                margin-right: 0;
+            }
+        }
+
+        /* Filter Toggle Button */
+        .filter-toggle-desktop {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .filter-toggle-desktop:hover {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .filter-toggle-desktop svg {
+            transition: transform 0.3s ease;
+        }
+
+        .filter-toggle-desktop.panel-hidden svg {
+            transform: rotate(180deg);
+        }
     </style>
+    <script>
+        function toggleMore(section) {
+            const hiddenElements = document.querySelectorAll(`.extra-${section}`);
+            const btn = document.getElementById(`btn-more-${section}`);
+            
+            let isHidden = false;
+            hiddenElements.forEach(el => {
+                if (el.classList.contains('hidden')) {
+                    el.classList.remove('hidden');
+                    isHidden = true;
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+            
+            if (btn) {
+                btn.innerText = isHidden ? 'Show less' : 'Load more';
+            }
+        }
+
+        function toggleDateRange(checkbox, section) {
+            const container = document.getElementById(`${section}-custom-range`);
+            if (checkbox.checked && checkbox.value === 'custom') {
+                 container.classList.remove('hidden');
+                 // Uncheck other options in same group if single select logic preferred, 
+                 // but here we just show the inputs.
+                 // Actually, if custom is checked, we probably should ensure others are unchecked if exclusive?
+                 // For now, let's just toggle the visibility.
+            } else if (!checkbox.checked && checkbox.value === 'custom') {
+                 container.classList.add('hidden');
+            }
+        }
+    </script>
 </head>
 
 <body
@@ -95,7 +317,7 @@
 
     <!-- Top Navigation -->
     <nav style="background-color: #1991d9;" class="border-b border-white/20 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto px-6 sm:px-8 lg:px-12">
             <div class="flex justify-between h-16">
                 <div class="flex items-center gap-3">
 
@@ -129,17 +351,7 @@
                         </svg>
                         Back to Hub
                     </a>
-                    <!-- Record Count -->
-                    <div
-                        class="stats-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 border border-white/30">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span class="text-sm text-white"><strong class="text-white">{{ filtered_count
-                                }}</strong> tickets</span>
-                    </div>
+                   
 
                     <!-- Template Switcher -->
                     <form action="/set-template" method="POST" class="flex items-center gap-2">
@@ -169,10 +381,10 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 min-h-0 flex flex-col w-full">
+    <main class="mx-auto px-6 sm:px-8 lg:px-12 py-6 flex-1 min-h-0 flex flex-col w-full">
 
         <!-- Header & Search in One Row -->
-        <div class="mb-6 flex items-start justify-between gap-6">
+        <div class="mb-6 flex items-end justify-between gap-6">
             <div class="flex-1 min-w-0">
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-surface-700 tracking-tight">
                     Support Tickets
@@ -181,7 +393,7 @@
                     Browse and search historical support tickets.
                 </p>
             </div>
-
+ 
             <!-- Search Box -->
             <div class="flex items-center gap-3">
                 <form method="GET" action="/tickets" class="relative w-80 group">
@@ -219,60 +431,276 @@
                     {% endif %}
                 </form>
             </div>
+            <!-- Record Count -->
+                    <div
+                        class="stats-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 border border-slate/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="text-sm text-slate"><strong class="text-slate">{{ filtered_count
+                                }}</strong> tickets</span>
+                    </div>
         </div>
 
-        <!-- Active Filters Row -->
-        {% if filters %}
-        <div class="mb-6 flex items-center gap-4">
-            <div class="flex items-center gap-2 overflow-x-auto flex-wrap">
-                {% for key, val in filters.items() %}
-                <a href="{{ url_for('ticket_list', **dict(request.args, **{key: None, 'page': 1})) }}"
-                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-brand-700 bg-brand-50 hover:bg-red-50 hover:text-red-600 transition-colors">
-                    <span class="uppercase text-[9px] font-bold opacity-60">{{ key }}:</span> {{ val }}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
+        <!-- Mobile Filter Toggle Button (visible on small screens) -->
+        <button id="filter-toggle-btn" 
+            class="lg:hidden mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-surface-200 text-surface-700 text-sm font-medium shadow-sm hover:bg-surface-50 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filters
+            <span id="active-filter-count" class="hidden px-1.5 py-0.5 rounded-full bg-brand-500 text-white text-xs font-bold">0</span>
+        </button>
 
-        <!-- Data Table -->
-        <div id="table-container"
-            class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden flex-1 min-h-0 mb-8">
-            <div class="overflow-y-auto h-full scroll-smooth" id="scroll-area">
+        <!-- Mobile Filter Overlay -->
+        <div id="filter-overlay" class="filter-overlay"></div>
+
+        <!-- Main Content Area with Filter Panel + Table -->
+        <div class="flex gap-3 flex-1 min-h-0 mb-8">
+            
+            <!-- Desktop Filter Toggle Button -->
+            <button id="desktop-filter-toggle" class="filter-toggle-desktop hidden lg:flex flex-shrink-0 self-start mt-1" title="Toggle Filters">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-surface-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+            </button>
+
+            <!-- Left Filter Panel -->
+            <aside id="filter-panel" class="filter-panel-wrapper hidden lg:block w-64 flex-shrink-0 h-full">
+                <div class="filter-panel rounded-2xl h-full flex flex-col overflow-hidden">
+                    <form id="filter-form" method="GET" action="/tickets" class="flex flex-col h-full">
+                        <!-- Scrollable Content -->
+                        <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                            <!-- Preserve search query -->
+                            {% if search_query %}
+                            <input type="hidden" name="q" value="{{ search_query }}">
+                            {% endif %}
+                            
+                            <!-- TYPE Section -->
+                            <div>
+                            <h3 class="filter-section-header">Type</h3>
+                            <div class="space-y-3">
+                                {% for val, count in facets.category %}
+                                <label class="flex items-center gap-3 cursor-pointer group {% if loop.index > 5 %}hidden extra-type{% endif %}">
+                                    <input type="checkbox" name="type" value="{{ val }}" class="filter-checkbox"
+                                        {% if val in filters.get('type', []) or val in filters.get('category', []) %}checked{% endif %}>
+                                    <span class="text-sm text-surface-700 group-hover:text-surface-900 transition-colors">{{ val }} <span class="text-surface-400 text-xs">({{ count }})</span></span>
+                                </label>
+                                {% endfor %}
+                                
+                                {% if facets.category|length > 5 %}
+                                <button type="button" id="btn-more-type" onclick="toggleMore('type')" 
+                                    class="text-xs font-medium text-brand-600 hover:text-brand-700 mt-2 focus:outline-none">
+                                    Load more
+                                </button>
+                                {% endif %}
+                            </div>
+                            </div>
+
+                            <!-- STATUS Section (Pill Style) -->
+                            <div>
+                                <h3 class="filter-section-header">Status</h3>
+                                <div class="flex flex-wrap gap-2">
+                                {% for val, count in facets.status %}
+                                <label class="filter-pill {% if val in filters.get('status', []) %}active{% endif %} {% if loop.index > 5 %}hidden extra-status{% endif %}">
+                                    <input type="checkbox" name="status" value="{{ val }}"
+                                        {% if val in filters.get('status', []) %}checked{% endif %}>
+                                    {{ val }}
+                                </label>
+                                {% endfor %}
+                                
+                                {% if facets.status|length > 5 %}
+                                <button type="button" id="btn-more-status" onclick="toggleMore('status')" 
+                                    class="text-xs font-medium text-brand-600 hover:text-brand-700 w-full text-left mt-1 focus:outline-none">
+                                    Load more
+                                </button>
+                                {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- AGENT Section -->
+                            <div>
+                                <h3 class="filter-section-header">Agent</h3>
+                                <div class="space-y-3">
+                                {% for val, count in facets.agent %}
+                                <label class="flex items-center gap-3 cursor-pointer group {% if loop.index > 5 %}hidden extra-agent{% endif %}">
+                                    <input type="checkbox" name="agent" value="{{ val }}" class="filter-checkbox"
+                                        {% if val in filters.get('agent', []) %}checked{% endif %}>
+                                    <span class="text-sm text-surface-700 group-hover:text-surface-900 transition-colors">{{ val }} <span class="text-surface-400 text-xs">({{ count }})</span></span>
+                                </label>
+                                {% endfor %}
+                                
+                                {% if facets.agent|length > 5 %}
+                                <button type="button" id="btn-more-agent" onclick="toggleMore('agent')" 
+                                    class="text-xs font-medium text-brand-600 hover:text-brand-700 mt-2 focus:outline-none">
+                                    Load more
+                                </button>
+                                {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- DATE CREATED Section -->
+                            <div>
+                                <h3 class="filter-section-header">Date Created</h3>
+                                <div class="space-y-3">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="date_created" value="today" class="filter-checkbox" onchange="if(this.checked) document.querySelector('input[name=date_created][value=custom]').checked=false; toggleDateRange(document.querySelector('input[name=date_created][value=custom]'), 'date_created')"
+                                        {% if 'today' in filters.get('date_created', '') %}checked{% endif %}>
+                                    <span class="text-sm text-surface-700 group-hover:text-surface-900 transition-colors">Today</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="date_created" value="last_7_days" class="filter-checkbox" onchange="if(this.checked) document.querySelector('input[name=date_created][value=custom]').checked=false; toggleDateRange(document.querySelector('input[name=date_created][value=custom]'), 'date_created')"
+                                        {% if 'last_7_days' in filters.get('date_created', '') %}checked{% endif %}>
+                                    <span class="text-sm text-surface-700 group-hover:text-surface-900 transition-colors">Last 7 days</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="date_created" value="last_30_days" class="filter-checkbox" onchange="if(this.checked) document.querySelector('input[name=date_created][value=custom]').checked=false; toggleDateRange(document.querySelector('input[name=date_created][value=custom]'), 'date_created')"
+                                        {% if 'last_30_days' in filters.get('date_created', '') %}checked{% endif %}>
+                                    <span class="text-sm text-surface-700 group-hover:text-surface-900 transition-colors">Last 30 days</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="date_created" value="custom" class="filter-checkbox" onchange="toggleDateRange(this, 'date_created')"
+                                        {% if 'custom' in filters.get('date_created', '') %}checked{% endif %}>
+                                    <span class="text-sm text-surface-700 group-hover:text-surface-900 transition-colors">Custom range</span>
+                                </label>
+                                
+                                <!-- Custom Date Inputs -->
+                                <div id="date_created-custom-range" class="{% if 'custom' not in filters.get('date_created', '') %}hidden{% endif %} pl-7 space-y-2">
+                                    <input type="date" name="date_created_start" value="{{ filters.get('date_created_start', '') }}" 
+                                        class="block w-full text-xs border border-surface-300 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500 focus:border-brand-500">
+                                    <input type="date" name="date_created_end" value="{{ filters.get('date_created_end', '') }}" 
+                                        class="block w-full text-xs border border-surface-300 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500 focus:border-brand-500">
+                                </div>
+                                </div>
+                            </div>
+
+                            <!-- LAST MODIFIED Section (Pill Style) -->
+                            <div>
+                                <h3 class="filter-section-header">Last Modified</h3>
+                                <div class="flex flex-wrap gap-2">
+                                <label class="filter-pill {% if 'today' in filters.get('last_modified', '') %}active{% endif %}">
+                                    <input type="checkbox" name="last_modified" value="today" onchange="if(this.checked) document.querySelector('input[name=last_modified][value=custom]').checked=false; toggleDateRange(document.querySelector('input[name=last_modified][value=custom]'), 'last_modified')"
+                                        {% if 'today' in filters.get('last_modified', '') %}checked{% endif %}>
+                                    Today
+                                </label>
+                                <label class="filter-pill {% if 'this_week' in filters.get('last_modified', '') %}active{% endif %}">
+                                    <input type="checkbox" name="last_modified" value="this_week" onchange="if(this.checked) document.querySelector('input[name=last_modified][value=custom]').checked=false; toggleDateRange(document.querySelector('input[name=last_modified][value=custom]'), 'last_modified')"
+                                        {% if 'this_week' in filters.get('last_modified', '') %}checked{% endif %}>
+                                    This week
+                                </label>
+                                <label class="filter-pill {% if 'this_month' in filters.get('last_modified', '') %}active{% endif %}">
+                                    <input type="checkbox" name="last_modified" value="this_month" onchange="if(this.checked) document.querySelector('input[name=last_modified][value=custom]').checked=false; toggleDateRange(document.querySelector('input[name=last_modified][value=custom]'), 'last_modified')"
+                                        {% if 'this_month' in filters.get('last_modified', '') %}checked{% endif %}>
+                                    This month
+                                </label>
+                                <label class="filter-pill {% if 'custom' in filters.get('last_modified', '') %}active{% endif %}">
+                                    <input type="checkbox" name="last_modified" value="custom" onchange="toggleDateRange(this, 'last_modified')"
+                                        {% if 'custom' in filters.get('last_modified', '') %}checked{% endif %}>
+                                    Custom
+                                </label>
+                            </div>
+                            
+                            <!-- Custom Date Inputs (Last Modified) -->
+                            <div id="last_modified-custom-range" class="{% if 'custom' not in filters.get('last_modified', '') %}hidden{% endif %} mt-3 space-y-2">
+                                <input type="date" name="last_modified_start" value="{{ filters.get('last_modified_start', '') }}" 
+                                    class="block w-full text-xs border border-surface-300 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500 focus:border-brand-500">
+                                <input type="date" name="last_modified_end" value="{{ filters.get('last_modified_end', '') }}" 
+                                    class="block w-full text-xs border border-surface-300 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500 focus:border-brand-500">
+                            </div>
+                        </div>
+
+                        <!-- Clear Filters -->
+                        <!-- <div class="pt-4 border-t border-surface-100">
+                            <a href="/tickets" class="clear-filters-btn hover:underline">Clear filters</a>
+                        </div> -->
+                        
+                        <!-- Sticky Footer Actions -->
+                        <div class="p-4 border-t border-white/40 bg-white/60 backdrop-blur-md flex items-center justify-between gap-3 shrink-0 z-10">
+                            <a href="/tickets" class="text-xs font-medium text-surface-500 hover:text-surface-700 transition-colors">
+                                Clear all
+                            </a>
+                            <button type="submit" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Right Side: Active Filters + Table -->
+            <div class="flex-1 min-w-0 flex flex-col min-h-0">
+                
+                <!-- Active Filters Row -->
+                <!-- Active Filters Row -->
+                {% if filters %}
+                <div class="mb-4 flex items-center gap-4">
+                    <div class="flex items-center gap-2 overflow-x-auto flex-wrap">
+                        {% for key, val in filters.items() %}
+                            {% if val is iterable and val is not string %}
+                                {% for v in val %}
+                                <a href="{{ url_for('ticket_list', **dict(request.args, **{key: None, 'page': 1})) }}"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-brand-700 bg-brand-50 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                    title="Clear all {{ key }} filters">
+                                    <span class="uppercase text-[9px] font-bold opacity-60">{{ key }}:</span> {{ v }}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                                {% endfor %}
+                            {% else %}
+                            <a href="{{ url_for('ticket_list', **dict(request.args, **{key: None, 'page': 1})) }}"
+                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-brand-700 bg-brand-50 hover:bg-red-50 hover:text-red-600 transition-colors">
+                                <span class="uppercase text-[9px] font-bold opacity-60">{{ key }}:</span> {{ val }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+
+                <!-- Data Table -->
+                <div id="table-container"
+                    class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden flex-1 min-h-0">
+                    <div class="overflow-y-auto h-full scroll-smooth" id="scroll-area">
                 <table class="min-w-full divide-y divide-surface-200 border-collapse">
                     <thead class="bg-gradient-to-r from-surface-800 to-surface-900 sticky top-0 z-10 shadow-sm">
                         <tr>
                             <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                class="px-6 py-2.5 text-left text-xs font-bold text-white uppercase tracking-wider">
                                 #
                             </th>
                             <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                class="px-6 py-2.5 text-left text-xs font-bold text-white uppercase tracking-wider">
                                 Type
                             </th>
                             <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-2/5">
+                                class="px-6 py-2.5 text-left text-xs font-bold text-white uppercase tracking-wider w-2/5">
                                 Subject
                             </th>
                             <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                class="px-6 py-2.5 text-left text-xs font-bold text-white uppercase tracking-wider">
                                 Created
                             </th>
                             <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                class="px-6 py-2.5 text-left text-xs font-bold text-white uppercase tracking-wider">
                                 Last Modified
                             </th>
                             <th scope="col"
-                                class="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                                class="px-6 py-2.5 text-right text-xs font-bold text-white uppercase tracking-wider">
                                 Duration
                             </th>
                             <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                class="px-6 py-2.5 text-left text-xs font-bold text-white uppercase tracking-wider">
                                 Agent
                             </th>
                         </tr>
@@ -409,7 +837,7 @@
 
                 <div class="flex items-center gap-1">
                     {% if page > 1 %}
-                    <a href="?page={{ page - 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}&{{ k }}={{ v }}{% endfor %}"
+                    <a href="?page={{ page - 1 }}&per_page={{ per_page }}{% if search_query %}&q={{ search_query }}{% endif %}{% for k,v in filters.items() %}{% if v is iterable and v is not string %}{% for item in v %}&{{ k }}={{ item }}{% endfor %}{% else %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                         class="px-3 py-1.5 flex items-center gap-1 rounded-lg hover:bg-surface-100 text-surface-600 text-xs font-medium transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20"
                             fill="currentColor">
@@ -459,7 +887,8 @@
                         {% endif %}
                 </div>
             </div>
-        </div>
+            </div> <!-- End flex-1 min-w-0 (Right Side) -->
+        </div> <!-- End flex gap-6 (Main Content Area) -->
 
     </main>
 
@@ -493,6 +922,86 @@
             // Add transition class to badge
             shortcutBadge.classList.add('transition-opacity', 'duration-200');
         }
+
+        // ============================================
+        // FILTER PANEL FUNCTIONALITY
+        // ============================================
+
+        // Mobile filter panel toggle
+        const filterToggleBtn = document.getElementById('filter-toggle-btn');
+        const filterPanel = document.getElementById('filter-panel');
+        const filterOverlay = document.getElementById('filter-overlay');
+
+        if (filterToggleBtn && filterPanel && filterOverlay) {
+            filterToggleBtn.addEventListener('click', () => {
+                filterPanel.classList.toggle('open');
+                filterOverlay.classList.toggle('open');
+            });
+
+            filterOverlay.addEventListener('click', () => {
+                filterPanel.classList.remove('open');
+                filterOverlay.classList.remove('open');
+            });
+        }
+
+        // Desktop filter panel toggle
+        const desktopFilterToggle = document.getElementById('desktop-filter-toggle');
+        if (desktopFilterToggle && filterPanel) {
+            // Check localStorage for saved state
+            const isCollapsed = localStorage.getItem('filterPanelCollapsed') === 'true';
+            if (isCollapsed) {
+                filterPanel.classList.add('collapsed');
+                desktopFilterToggle.classList.add('panel-hidden');
+            }
+
+            desktopFilterToggle.addEventListener('click', () => {
+                const willCollapse = !filterPanel.classList.contains('collapsed');
+                filterPanel.classList.toggle('collapsed');
+                desktopFilterToggle.classList.toggle('panel-hidden');
+                // Save state to localStorage
+                localStorage.setItem('filterPanelCollapsed', willCollapse);
+            });
+        }
+
+        // Pill toggle active state
+        const filterPills = document.querySelectorAll('.filter-pill');
+        filterPills.forEach(pill => {
+            const checkbox = pill.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener('change', () => {
+                    pill.classList.toggle('active', checkbox.checked);
+                });
+            }
+        });
+
+        // Auto-submit filter form on change
+        const filterForm = document.getElementById('filter-form');
+        if (filterForm) {
+            const filterInputs = filterForm.querySelectorAll('input[type="checkbox"]');
+            filterInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    // Small delay to allow visual feedback
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 150);
+                });
+            });
+        }
+
+        // Update active filter count badge on mobile
+        function updateActiveFilterCount() {
+            const countBadge = document.getElementById('active-filter-count');
+            if (countBadge && filterForm) {
+                const checkedCount = filterForm.querySelectorAll('input[type="checkbox"]:checked').length;
+                if (checkedCount > 0) {
+                    countBadge.textContent = checkedCount;
+                    countBadge.classList.remove('hidden');
+                } else {
+                    countBadge.classList.add('hidden');
+                }
+            }
+        }
+        updateActiveFilterCount();
     </script>
 
 </body>

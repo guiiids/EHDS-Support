@@ -9,12 +9,14 @@ Run migration first: python migrate_to_sqlite.py
 import os
 import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request, send_file, url_for
 from markupsafe import Markup
+
+from .db import get_db, close_db
 
 # Load environment variables
 load_dotenv()
@@ -34,11 +36,13 @@ request_logger = RequestLogger(app)
 from .blueprints.canned_responses import bp as canned_responses_bp
 from .blueprints.help_articles import bp as help_articles_bp
 from .blueprints.chat_widget import bp as chat_widget_bp
+from .blueprints.analytics import bp as analytics_bp
 
 app.register_blueprint(canned_responses_bp)
 app.register_blueprint(help_articles_bp)
 app.register_blueprint(chat_widget_bp)
-logger.info("Blueprints registered: canned_responses, help_articles, chat_widget")
+app.register_blueprint(analytics_bp)
+logger.info("Blueprints registered: canned_responses, help_articles, chat_widget, analytics")
 
 # === Template Configuration ===
 VALID_TEMPLATES = ['ticket_detail', 'ticket_detail2', 'ticket_detail3', 'ticket_detail4']
@@ -48,43 +52,9 @@ def get_selected_template():
     template = os.getenv('TICKET_DETAIL_TEMPLATE', 'ticket_detail')
     return template if template in VALID_TEMPLATES else 'ticket_detail'
 
-# === Database Configuration 
-DB_PATH = os.getenv("DATABASE_PATH")
-if DB_PATH:
-    DB_PATH = Path(DB_PATH)
-else:
-    DB_PATH = Path(__file__).resolve().parent.parent / "data" / "teamsupport.db"
-
-
-def get_db():
-    """Get database connection for current request."""
-    if 'db' not in g:
-        db_path = Path(DB_PATH)
-        if not db_path.exists():
-            log_error(f"Database not found: {DB_PATH}")
-            raise FileNotFoundError(
-                f"Database {DB_PATH} not found! Run: python migrate_to_sqlite.py"
-            )
-        # Connect in read-only mode to support Azure Blob Storage mounts
-        g.db = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
-        g.db.row_factory = sqlite3.Row  # Return dicts instead of tuples
-        
-        # Attach KB database for unified queries
-        kb_path = Path(DB_PATH).parent / "kb_articles.db"
-        if kb_path.exists():
-            try:
-                g.db.execute(f"ATTACH DATABASE '{kb_path}' AS kb")
-            except sqlite3.OperationalError as e:
-                log_warning(f"Could not attach KB database: {e}")
-    return g.db
-
-
 @app.teardown_appcontext
-def close_db(exception):
-    """Close database connection at end of request."""
-    db = g.pop('db', None)
-    if db is not None:
-        db.close()
+def teardown_db(exception):
+    close_db(exception)
 
 
 # === Helper Functions ===
@@ -182,12 +152,18 @@ def format_iso_date(iso_str: str, format_str: str = '%m/%d/%y %I:%M %p') -> str:
 
 # === Data Access Layer ===
 
-def get_filtered_query_parts(search_query: str = None, filters: dict = None):
+def get_filtered_query_parts(search_query: str = None, filters: dict = None, exclude_field: str = None):
     """
     Helper to generate SQL WHERE clauses and parameters for unified query.
     Returns: (ticket_where, ticket_params, kb_where, kb_params)
     """
-    ticket_conditions = ["1=1"]
+    ticket_conditions = [
+        "1=1",
+        "LOWER(customers) NOT LIKE '%unknown company%'",
+        "customers != 'Agilent Technologies (688244)'",
+        "customers IS NOT NULL",
+        "customers != ''"
+    ]
     ticket_params = []
     
     kb_conditions = ["1=1"]
@@ -205,153 +181,271 @@ def get_filtered_query_parts(search_query: str = None, filters: dict = None):
 
     # 2. Facet Filters
     if filters:
+        
+        def add_condition(field, db_col, ticket_list=None, kb_list=None, is_ticket=True, is_kb=True):
+            if filters.get(field) and exclude_field != field:
+                values = filters[field]
+                if not isinstance(values, list):
+                    values = [values]
+                
+                placeholders = ','.join(['?'] * len(values))
+                
+                if is_ticket:
+                    ticket_list.append(f"{db_col} IN ({placeholders})")
+                    ticket_params.extend(values)
+                
+                if is_kb:
+                    # Special Case: KB Status is always 'Canned Response'
+                    if field == 'status':
+                        if 'Canned Response' in values:
+                             kb_list.append("1=1")
+                        else:
+                             kb_list.append("1=0")
+                    else:
+                        kb_list.append(f"{db_col if db_col != 'ticket_type' else 'kb_parent_category_name'} IN ({placeholders})")
+                        if field != 'status': # Status is handled above
+                             kb_params.extend(values)
+
         # Agent / Author
-        if filters.get('agent'):
-            ticket_conditions.append("assigned_to = ?")
-            ticket_params.append(filters['agent'])
-            kb_conditions.append("author = ?")
-            kb_params.append(filters['agent'])
-            
+        if filters.get('agent') and exclude_field != 'agent':
+             vals = filters['agent']
+             ph = ','.join(['?'] * len(vals))
+             ticket_conditions.append(f"assigned_to IN ({ph})")
+             ticket_params.extend(vals)
+             kb_conditions.append(f"author IN ({ph})")
+             kb_params.extend(vals)
+
         # Status
-        if filters.get('status'):
-            # KB status is always 'Canned Response'
-            if filters['status'] == 'Canned Response':
-                ticket_conditions.append("1=0") # No tickets match this status
+        if filters.get('status') and exclude_field != 'status':
+            vals = filters['status']
+            ph = ','.join(['?'] * len(vals))
+            ticket_conditions.append(f"status IN ({ph})")
+            ticket_params.extend(vals)
+            
+            if 'Canned Response' in vals:
                 kb_conditions.append("1=1")
             else:
-                ticket_conditions.append("status = ?")
-                ticket_params.append(filters['status'])
-                kb_conditions.append("1=0") # No KB matches other statuses
+                 kb_conditions.append("1=0")
 
-        # Category
-        if filters.get('category'):
-            ticket_conditions.append("ticket_type = ?") # Category maps to ticket_type
-            ticket_params.append(filters['category'])
-            kb_conditions.append("kb_parent_category_name = ?")
-            kb_params.append(filters['category'])
+        # Category (Type)
+        if filters.get('category') and exclude_field != 'category':
+             vals = filters['category']
+             ph = ','.join(['?'] * len(vals))
+             ticket_conditions.append(f"ticket_type IN ({ph})")
+             ticket_params.extend(vals)
+             kb_conditions.append(f"kb_parent_category_name IN ({ph})")
+             kb_params.extend(vals)
 
         # Subcategory
-        if filters.get('subcategory'):
-            ticket_conditions.append("subcategory = ?")
-            ticket_params.append(filters['subcategory'])
-            kb_conditions.append("kb_category_name = ?")
-            kb_params.append(filters['subcategory'])
+        if filters.get('subcategory') and exclude_field != 'subcategory':
+             vals = filters['subcategory']
+             ph = ','.join(['?'] * len(vals))
+             ticket_conditions.append(f"subcategory IN ({ph})")
+             ticket_params.extend(vals)
+             kb_conditions.append(f"kb_category_name IN ({ph})")
+             kb_params.extend(vals)
 
         # Customer
-        if filters.get('customer'):
-            ticket_conditions.append("customers = ?")
-            ticket_params.append(filters['customer'])
-            kb_conditions.append("1=0") # KB has no customers
+        if filters.get('customer') and exclude_field != 'customer':
+             vals = filters['customer']
+             ph = ','.join(['?'] * len(vals))
+             ticket_conditions.append(f"customers IN ({ph})")
+             ticket_params.extend(vals)
+             kb_conditions.append("1=0")
 
-        # Year
-        if filters.get('year'):
+        # Date Logic Helper
+        def add_date_logic(filter_key, db_col_ticket, db_col_kb):
+             if filters.get(filter_key):
+                 val = filters[filter_key]
+                 # Handle list if it came as a list (though date usually single, but for safety)
+                 if isinstance(val, list): val = val[0]
+                 
+                 now = datetime.now()
+                 start_date = None
+                 end_date = None
+                 
+                 if val == 'today':
+                     start_date = now.strftime('%Y-%m-%d')
+                 elif val == 'last_7_days':
+                     start_date = (now - timedelta(days=7)).strftime('%Y-%m-%d')
+                 elif val == 'last_30_days':
+                     start_date = (now - timedelta(days=30)).strftime('%Y-%m-%d')
+                 elif val == 'this_week': # For last_modified
+                      start_of_week = (now - timedelta(days=now.weekday())).strftime('%Y-%m-%d')
+                      start_date = start_of_week
+                 elif val == 'this_month':
+                      start_of_month = now.replace(day=1).strftime('%Y-%m-%d')
+                      start_date = start_of_month
+                 elif val == 'custom':
+                      # Look for start/end in filters
+                      start_key = f"{filter_key}_start"
+                      end_key = f"{filter_key}_end"
+                      if filters.get(start_key):
+                          start_date = filters[start_key]
+                      if filters.get(end_key):
+                          end_date = filters[end_key]
+                 
+                 if start_date:
+                     ticket_conditions.append(f"{db_col_ticket} >= ?")
+                     ticket_params.append(start_date)
+                     kb_conditions.append(f"COALESCE({db_col_kb}, '1970-01-01') >= ?")
+                     kb_params.append(start_date)
+                 
+                 if end_date:
+                     # Add time for end date to make it inclusive of the day (23:59:59) or just check < next day
+                     # For simplicity, assuming simple date string comparison
+                     ticket_conditions.append(f"date({db_col_ticket}) <= ?")
+                     ticket_params.append(end_date)
+                     kb_conditions.append(f"date(COALESCE({db_col_kb}, '1970-01-01')) <= ?")
+                     kb_params.append(end_date)
+
+        # Date Created
+        add_date_logic('date_created', 'date_ticket_created', 'date_created')
+        
+        # Last Modified
+        add_date_logic('last_modified', 'date_action_created', 'date_modified')
+
+        # Legacy Year/Month (keep for compatibility if needed, using simple equality)
+        if filters.get('year') and exclude_field != 'year':
             ticket_conditions.append("strftime('%Y', date_action_created) = ?")
             ticket_params.append(filters['year'])
             kb_conditions.append("strftime('%Y', COALESCE(date_modified, date_created)) = ?")
             kb_params.append(filters['year'])
 
-        # Month
-        if filters.get('month'):
+        if filters.get('month') and exclude_field != 'month':
+            m = int(filters['month'])
             ticket_conditions.append("strftime('%m', date_action_created) = ?")
-            ticket_params.append(f"{int(filters['month']):02d}") # Ensure 01-12 format
+            ticket_params.append(f"{m:02d}")
             kb_conditions.append("strftime('%m', COALESCE(date_modified, date_created)) = ?")
-            kb_params.append(f"{int(filters['month']):02d}")
+            kb_params.append(f"{m:02d}")
 
     return (
         " AND ".join(ticket_conditions), ticket_params,
         " AND ".join(kb_conditions), kb_params
     )
-
+from datetime import timedelta # Ensure timedelta is available
 
 def get_facets(search_query: str = None, filters: dict = None) -> dict:
-    """Calculate facet counts based on current search and filters."""
+    """Calculate facet counts with exclusion logic for multi-select friendliness."""
     db = get_db()
     cursor = db.cursor()
     
-    t_where, t_params, k_where, k_params = get_filtered_query_parts(search_query, filters)
-    
-    # Define the unified dataset CTE
-    # We select only columns needed for aggregation to optimize
-    cte_sql = f"""
-        WITH unified_items AS (
-            SELECT 
-                assigned_to as agent,
-                status,
-                ticket_type as category,
-                subcategory,
-                customers as customer,
-                date_action_created as date_val,
-                0 as is_kb
-            FROM tickets
-            WHERE {t_where}
-            
-            UNION ALL
-            
-            SELECT 
-                author as agent,
-                'Canned Response' as status,
-                kb_parent_category_name as category,
-                kb_category_name as subcategory,
-                '' as customer,
-                COALESCE(date_modified, date_created) as date_val,
-                1 as is_kb
-            FROM kb.kb_articles
-            WHERE {k_where}
-        )
-    """
-    
-    full_params = t_params + k_params
     facets = {}
-    
-    # Helper to run aggregation
-    def get_group_counts(field):
-        sql = f"{cte_sql} SELECT {field}, COUNT(*) as c FROM unified_items WHERE {field} IS NOT NULL AND {field} != '' GROUP BY {field} ORDER BY c DESC LIMIT 50"
+
+    # Define helper to get counts for a specific field, excluding its own filter
+    def fetch_facet(field, facet_key):
+        # recalculate WHERE clause excluding current field
+        t_where, t_params, k_where, k_params = get_filtered_query_parts(search_query, filters, exclude_field=facet_key)
+        
+        full_params = t_params + k_params
+        
+        # CTE for this specific facet query
+        # Note: We can reuse the same CTE structure but the WHERE clause changes per facet
+        cte_sql = f"""
+            WITH unified_items AS (
+                SELECT 
+                    assigned_to as agent,
+                    status,
+                    ticket_type as category,
+                    subcategory,
+                    customers as customer,
+                    date_action_created as date_val,
+                    0 as is_kb
+                FROM tickets
+                WHERE {t_where}
+                
+                UNION ALL
+                
+                SELECT 
+                    author as agent,
+                    'Canned Response' as status,
+                    kb_parent_category_name as category,
+                    kb_category_name as subcategory,
+                    '' as customer,
+                    COALESCE(date_modified, date_created) as date_val,
+                    1 as is_kb
+                FROM kb.kb_articles
+                WHERE {k_where}
+            )
+            SELECT {field}, COUNT(*) as c 
+            FROM unified_items 
+            WHERE {field} IS NOT NULL AND {field} != '' 
+            GROUP BY {field} 
+            ORDER BY c DESC 
+            LIMIT 50
+        """
+        
         try:
-            cursor.execute(sql, full_params)
+            cursor.execute(cte_sql, full_params)
             return [(row[0], row[1]) for row in cursor.fetchall()]
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            log_warning(f"Facet error for {field}: {e}")
             return []
 
-    # 1. Agent
-    facets['agent'] = get_group_counts('agent')
+    # 1. Agent (exclude 'agent' filter)
+    facets['agent'] = fetch_facet('agent', 'agent')
     
-    # 2. Status
-    facets['status'] = get_group_counts('status')
+    # 2. Status (exclude 'status' filter)
+    facets['status'] = fetch_facet('status', 'status')
     
-    # 3. Category
-    facets['category'] = get_group_counts('category')
+    # 3. Category (exclude 'category' filter)
+    facets['category'] = fetch_facet('category', 'category')
     
     # 4. Subcategory
-    facets['subcategory'] = get_group_counts('subcategory')
+    facets['subcategory'] = fetch_facet('subcategory', 'subcategory')
     
-    # 5. Customer (Limit to top 20 to avoid huge lists)
-    sql_cust = f"{cte_sql} SELECT customer, COUNT(*) as c FROM unified_items WHERE customer IS NOT NULL AND customer != '' GROUP BY customer ORDER BY c DESC LIMIT 20"
-    try:
-        cursor.execute(sql_cust, full_params)
-        facets['customer'] = [(row[0], row[1]) for row in cursor.fetchall()]
-    except sqlite3.OperationalError:
-        facets['customer'] = []
+    # 5. Customer
+    # Customer logic slightly different in original (limit 20), but unified generic approach is fine or special case
+    # Let's use the generic fetch_facet but logic on limit is inside query.
+    # We can just use fetch_facet('customer', 'customer') as it limits to 50
+    facets['customer'] = fetch_facet('customer', 'customer')
 
     # 6. Year
-    sql_year = f"{cte_sql} SELECT strftime('%Y', date_val) as y, COUNT(*) as c FROM unified_items WHERE date_val IS NOT NULL GROUP BY y ORDER BY y DESC"
+    # For Year/Month, usually we don't exclude unless we want multi-year Select
+    # Let's exclude for consistency
+    t_where_y, t_params_y, k_where_y, k_params_y = get_filtered_query_parts(search_query, filters, exclude_field='year')
+    sql_year = f"""
+        WITH unified_items AS (
+            SELECT date_action_created as date_val FROM tickets WHERE {t_where_y}
+            UNION ALL
+            SELECT COALESCE(date_modified, date_created) as date_val FROM kb.kb_articles WHERE {k_where_y}
+        )
+        SELECT strftime('%Y', date_val) as y, COUNT(*) as c 
+        FROM unified_items 
+        WHERE date_val IS NOT NULL 
+        GROUP BY y 
+        ORDER BY y DESC
+    """
     try:
-        cursor.execute(sql_year, full_params)
+        cursor.execute(sql_year, t_params_y + k_params_y)
         facets['year'] = [(row[0], row[1]) for row in cursor.fetchall()]
     except sqlite3.OperationalError:
-         facets['year'] = []
+        facets['year'] = []
 
-    # 7. Month (if year selected? or always? let's show always for now or only if year selected usually)
-    # Let's show aggregated months across all years for now, or maybe just simple list
-    sql_month = f"{cte_sql} SELECT strftime('%m', date_val) as m, COUNT(*) as c FROM unified_items WHERE date_val IS NOT NULL GROUP BY m ORDER BY m ASC"
+    # 7. Month (Aggregated)
+    # Reuse year params for simplicity or own exclusion
+    t_where_m, t_params_m, k_where_m, k_params_m = get_filtered_query_parts(search_query, filters, exclude_field='month')
+    sql_month = f"""
+        WITH unified_items AS (
+            SELECT date_action_created as date_val FROM tickets WHERE {t_where_m}
+            UNION ALL
+            SELECT COALESCE(date_modified, date_created) as date_val FROM kb.kb_articles WHERE {k_where_m}
+        )
+        SELECT strftime('%m', date_val) as m, COUNT(*) as c 
+        FROM unified_items 
+        WHERE date_val IS NOT NULL 
+        GROUP BY m 
+        ORDER BY m ASC
+    """
     try:
-        cursor.execute(sql_month, full_params)
+        cursor.execute(sql_month, t_params_m + k_params_m)
         facets['month'] = []
         import calendar
         for row in cursor.fetchall():
-            m_idx = int(row[0]) if row[0] and row[0].isdigit() else 0
-            if 1 <= m_idx <= 12:
-                name = calendar.month_name[m_idx]
-                facets['month'].append((m_idx, name, row[1])) # (id, name, count)
+             m_idx = int(row[0]) if row[0] and row[0].isdigit() else 0
+             if 1 <= m_idx <= 12:
+                 name = calendar.month_name[m_idx]
+                 facets['month'].append((m_idx, name, row[1]))
     except sqlite3.OperationalError:
          facets['month'] = []
          
@@ -562,22 +656,51 @@ def index():
     return render_template('admin_hub.html')
 
 
+@app.route('/submit-ticket')
+def submit_ticket():
+    """Submit new ticket form."""
+    return render_template('submit_ticket.html')
+
+
+@app.route('/submit-ticket-auth')
+def submit_ticket_auth():
+    """Submit new ticket form for logged-in users (streamlined, no contact fields)."""
+    # Mock user data - in a real app, this would come from the session/auth system
+    current_user = {
+        'name': 'Guilherme Vieira Machado',
+        'email': 'gvieiramachado@agilent.com',
+        'initials': 'GM',
+        'organization': 'Agilent Technologies',
+        'role': 'Super Admin'
+    }
+    return render_template('submit_ticket_auth.html', current_user=current_user)
+
+
 @app.route('/tickets')
 def ticket_list():
     """Ticket list view with search, pagination, and facets."""
     search_query = request.args.get('q', '').strip()
     
     # Parse filters
+    # Parse filters
     filters = {
-        'agent': request.args.get('agent', '').strip(),
-        'status': request.args.get('status', '').strip(),
-        'category': request.args.get('category', '').strip(),
-        'subcategory': request.args.get('subcategory', '').strip(),
-        'customer': request.args.get('customer', '').strip(),
+        'agent': request.args.getlist('agent'),
+        'status': request.args.getlist('status'),
+        'type': request.args.getlist('type'),
+        # Support both 'type' (frontend) and 'category' (legacy)
+        'category': request.args.getlist('category') or request.args.getlist('type'),
+        'subcategory': request.args.getlist('subcategory'),
+        'customer': request.args.getlist('customer'),
+        'date_created': request.args.get('date_created', '').strip(),
+        'date_created_start': request.args.get('date_created_start', '').strip(),
+        'date_created_end': request.args.get('date_created_end', '').strip(),
+        'last_modified': request.args.get('last_modified', '').strip(),
+        'last_modified_start': request.args.get('last_modified_start', '').strip(),
+        'last_modified_end': request.args.get('last_modified_end', '').strip(),
         'year': request.args.get('year', '').strip(),
         'month': request.args.get('month', '').strip(),
     }
-    # Remove empty filters
+    # Remove empty filters lists or strings (but keep 0 if valid, though here strings)
     filters = {k: v for k, v in filters.items() if v}
     
     # Pagination parameters
@@ -604,6 +727,7 @@ def ticket_list():
     tickets = get_tickets_page(page, per_page, search_query if search_query else None, filters)
     
     # Get Facets (for Sidebar)
+    # We pass strict search_query so facets reflect the search
     facets = get_facets(search_query if search_query else None, filters)
     
     # Calculate display range

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket #{{ ticket_id }} - Archive View</title>
+
+    <!-- Design Assets -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@100;300;400;500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        condensed: ['Roboto Condensed', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: {
+                            blue: '#0085D5',
+                            dark: '#0B3F63',
+                            light: '#E6F3FA'
+                        },
+                        surface: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8', // Keep some brand refs for legacy override if needed, but prefer agilent mapping
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom message body formatting */
+        .message-body {
+            white-space: pre-wrap;
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.65;
+        }
+
+        /* Smooth scrolling for sidebar */
+        .sidebar-content {
+            scrollbar-width: thin;
+            scrollbar-color: #e2e8f0 transparent;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background-color: #e2e8f0;
+            border-radius: 4px;
+        }
+
+        /* Elegant hover states */
+        .message-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message-card:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Role badge styling */
+        .role-badge-agent {
+            background: linear-gradient(135deg, #0085D5 0%, #006FB3 100%);
+            color: white;
+        }
+
+        .role-badge-customer {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #475569;
+        }
+
+        /* Stats card micro-interactions */
+        .stat-item {
+            transition: all 0.15s ease;
+        }
+
+        .stat-item:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Sidebar section divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e2e8f0 20%, #e2e8f0 80%, transparent);
+        }
+
+        /* Scroll indicator */
+        .scroll-fade-indicator {
+            background: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 30%, rgba(255, 255, 255, 0) 100%);
+        }
+
+        /* New message animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-new {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-surface-50 text-surface-700 font-sans antialiased selection:bg-agilent-light selection:text-agilent-dark">
+
+    <!-- Navbar - Clean, professional header -->
+    <nav class="bg-white/95 backdrop-blur-sm border-b border-surface-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <a href="/tickets" class="group flex items-center gap-3">
+                        <div
+                            class="h-9 w-9 rounded bg-agilent-dark flex items-center justify-center shadow-md group-hover:bg-agilent-blue transition-colors">
+                            <i class="ph-bold ph-archive text-white text-xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span
+                                class="font-condensed font-bold text-agilent-dark text-lg uppercase tracking-wide leading-none">Support
+                                Archive</span>
+                            <span class="text-xs text-surface-500 font-medium uppercase tracking-wider">Archive
+                                View</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/tickets"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-surface-600 hover:text-agilent-blue hover:bg-agilent-light transition-all duration-200">
+                        <i class="ph-bold ph-arrow-left group-hover:-translate-x-0.5 transition-transform"></i>
+                        Back to Tickets
+                    </a>
+                    <a href="/ticket/{{ ticket_id }}/pdf"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-agilent-blue hover:bg-agilent-dark shadow-md hover:shadow-lg transition-all duration-200">
+                        <i class="ph-bold ph-file-pdf text-lg"></i>
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+        <!-- Page Header - Strong visual hierarchy -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div class="space-y-3">
+                    <!-- Ticket ID & Type badge row -->
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span
+                            class="font-mono text-sm font-bold text-surface-700 bg-surface-100 px-3 py-1.5 rounded-md border border-surface-200 shadow-sm">
+                            #{{ ticket_id }}
+                        </span>
+                        <span class="text-xs font-bold text-surface-500 uppercase tracking-wider">
+                            {{ ticket_info.ticket_type or 'Support Ticket' }}
+                        </span>
+                    </div>
+
+                    <!-- Ticket Title -->
+                    <h1 class="text-2xl sm:text-3xl font-light text-agilent-dark tracking-tight leading-snug max-w-2xl">
+                        {{ ticket_info.ticket_name or 'Untitled Ticket' }}
+                    </h1>
+                </div>
+
+                <!-- Status Badge - Prominent -->
+                <div class="flex-shrink-0">
+                    <span
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border-2 shadow-sm {{ ticket_info.status|status_color }}">
+                        <span class="w-2 h-2 rounded-full bg-current opacity-75 animate-pulse"></span>
+                        {{ ticket_info.status or 'Unknown' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- LEFT COLUMN: Activity Stream (8 cols) -->
+            <main class="lg:col-span-8 space-y-6">
+
+                <!-- Activity Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-surface-200">
+                    <div class="flex items-center gap-1">
+                        <div class="h-8 w-8 rounded-lg flex items-center justify-center">
+                            <i class="ph-bold ph-waveform text-agilent-blue text-lg"></i>
+                        </div>
+                        <h2 class="text-lg font-condensed font-bold text-surface-700 uppercase tracking-wide">Activity
+                            Stream</h2>
+                    </div>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-surface-600 bg-surface-100 border border-surface-200">
+                        {{ messages|length }} Messages
+                    </span>
+                </div>
+
+                {% for msg in messages %}
+                {% set is_agent = msg.role == 'Agent' %}
+
+                <!-- Message Card -->
+                <div
+                    class="message-card bg-white rounded-xl border border-surface-200 shadow-card hover:shadow-card-hover overflow-hidden">
+
+                    <!-- Card Header with integrated avatar -->
+                    <div
+                        class="px-5 py-4 bg-gradient-to-r {{ 'from-agilent-light/50' if is_agent else 'from-surface-50/80' }} to-white border-b border-surface-100">
+                        <div class="flex items-center gap-4">
+                            <!-- Avatar -->
+                            {% if is_agent %}
+                            <div class="relative">
+                                <div
+                                    class="h-11 w-11 rounded-full bg-gradient-to-br from-agilent-blue to-agilent-dark flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
+                                    {% set initials = msg.action_creator_name|get_initials %}
+                                    {% if initials != '?' and initials != '' %}{{ initials }}{% else %}<i
+                                        class="ph-bold ph-headset text-lg"></i>{% endif %}
+                                </div>
+                                <div class="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-agilent-blue border-2 border-white flex items-center justify-center"
+                                    title="Support Agent">
+                                    <i class="ph-bold ph-check text-white text-[8px]"></i>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div
+                                class="h-11 w-11 rounded-full bg-gradient-to-br from-surface-300 to-surface-400 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
+                                {% set initials = msg.action_creator_name|get_initials %}
+                                {% if initials != '?' and initials != '' %}{{ initials }}{% else %}<i
+                                    class="ph-bold ph-user text-lg"></i>{% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Name and role -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2.5 flex-wrap">
+                                    <span class="font-bold text-surface-800 truncate text-base">
+                                        {{ msg.action_creator_name or 'Unknown User' }}
+                                    </span>
+                                    {% if is_agent %}
+                                    <span
+                                        class="role-badge-agent inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
+                                        <i class="ph-bold ph-headset"></i> Support Agent
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        class="role-badge-customer inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border border-surface-300">
+                                        Customer
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <time class="text-xs text-surface-500 font-medium mt-0.5 block flex items-center gap-1"
+                                    title="{{ msg.date_action_created }}">
+                                    <i class="ph-regular ph-clock"></i> {{ msg.date_action_created|format_date }}
+                                </time>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="px-5 py-5">
+                        <div class="message-body text-md text-surface-700"> {{ msg.linkified_description }} </div>
+
+                        {% if msg.has_signature %}
+                        <details class="group/details mt-5">
+                            <summary
+                                class="list-none cursor-pointer flex items-center gap-2 text-xs text-surface-400 hover:text-agilent-blue transition-colors select-none font-medium">
+                                <i
+                                    class="ph-bold ph-caret-right transform transition-transform group-open/details:rotate-90"></i>
+                                <span>Show full message (includes signature)</span>
+                            </summary>
+                            <div
+                                class="mt-4 pt-4 border-t border-surface-100 text-xs text-surface-500 font-mono bg-surface-50/50 -mx-5 -mb-5 px-5 py-4">
+                                <div class="message-body">{{ msg.full_message }}</div>
+                            </div>
+                        </details>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-surface-200">
+                    <div class="h-14 w-14 mx-auto rounded-full bg-surface-100 flex items-center justify-center mb-4">
+                        <i class="ph-duotone ph-chats-teardrop text-3xl text-surface-300"></i>
+                    </div>
+                    <p class="text-surface-600 font-semibold">No activity recorded</p>
+                    <p class="text-surface-400 text-sm mt-1">This ticket has no messages yet.</p>
+                </div>
+                {% endfor %}
+
+            </main>
+
+            <!-- RIGHT COLUMN: Metadata Sidebar (4 cols) -->
+            <aside class="lg:col-span-4">
+                <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden sticky top-24">
+
+                    <!-- Sidebar Header -->
+                    <div
+                        class="px-5 py-4 bg-gradient-to-r from-agilent-dark to-surface-900 border-b border-surface-800">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i class="ph-bold ph-info"></i> Ticket Overview
+                        </h3>
+                    </div>
+
+                    <!-- Sidebar content -->
+                    <div class="sidebar-wrapper relative">
+                        <div id="sidebarContent"
+                            class="p-5 space-y-6 sidebar-content max-h-[calc(100vh-200px)] overflow-y-auto">
+
+                            <!-- Section 1: Status -->
+                            <div class="space-y-4">
+                                <div
+                                    class="flex items-center gap-2 text-xs font-bold text-surface-400 uppercase tracking-wider">
+                                    <i class="ph-bold ph-activity text-surface-400"></i> Current Status
+                                </div>
+
+                                <div class="stat-item rounded-lg p-4 bg-surface-50 border border-surface-100">
+                                    <div class="flex items-center justify-between">
+                                        <span
+                                            class="text-xs font-semibold text-surface-500 uppercase tracking-wide">Status</span>
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold {{ ticket_info.status|status_color }}">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                            {{ ticket_info.status or 'Unknown' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <!-- Section 2: People -->
+                            <div class="space-y-4">
+                                <div
+                                    class="flex items-center gap-2 text-xs font-bold text-surface-400 uppercase tracking-wider">
+                                    <i class="ph-bold ph-users text-surface-400"></i> People
+                                </div>
+
+                                <!-- Contact Card -->
+                                <div class="stat-item rounded-lg p-4 bg-surface-50 border border-surface-100">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="h-10 w-10 rounded-full bg-gradient-to-br from-surface-400 to-surface-500 flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+                                            {% set t_owner = ticket_info.ticket_owner|get_initials %}
+                                            {% if t_owner != '?' and t_owner != '' %}{{ t_owner }}{% else %}<i
+                                                class="ph-bold ph-user"></i>{% endif %}
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p
+                                                class="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-0.5">
+                                                Contact</p>
+                                            <p class="text-sm font-bold text-surface-700 truncate"
+                                                title="{{ ticket_info.ticket_owner }}">
+                                                {{ ticket_info.ticket_owner or 'Unknown' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Assigned Agent Card -->
+                                <div class="stat-item rounded-lg p-4 bg-agilent-light/30 border border-agilent-light">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="h-10 w-10 rounded-full bg-gradient-to-br from-agilent-blue to-agilent-dark flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+                                            {% set a_user = ticket_info.assigned_to|get_initials %}
+                                            {% if a_user != '?' and a_user != '' %}{{ a_user }}{% else %}<i
+                                                class="ph-bold ph-headset"></i>{% endif %}
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p
+                                                class="text-xs font-semibold text-agilent-blue uppercase tracking-wide mb-0.5">
+                                                Assigned Agent</p>
+                                            <p class="text-sm font-bold text-surface-700 truncate"
+                                                title="{{ ticket_info.assigned_to }}">
+                                                {{ ticket_info.assigned_to or 'Unassigned' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Customer Organizations -->
+                                <div class="stat-item rounded-lg p-4 bg-surface-50 border border-surface-100">
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="h-10 w-10 rounded-lg bg-surface-200 flex items-center justify-center text-surface-500 flex-shrink-0">
+                                            <i class="ph-bold ph-buildings text-xl"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p
+                                                class="text-xs font-semibold text-surface-500 uppercase tracking-wide mb-1">
+                                                Customer</p>
+                                            <p class="text-sm font-medium text-surface-700 leading-relaxed"
+                                                title="{{ ticket_info.customers }}">
+                                                {{ ticket_info.customers or 'Unknown' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <!-- Section 3: Classification -->
+                            <div class="space-y-4">
+                                <div
+                                    class="flex items-center gap-2 text-xs font-bold text-surface-400 uppercase tracking-wider">
+                                    <i class="ph-bold ph-tag text-surface-400"></i> Classification
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-3">
+                                    <!-- Type -->
+                                    <div
+                                        class="stat-item rounded-lg p-3 bg-surface-50 border border-surface-100 flex items-center justify-between">
+                                        <span
+                                            class="text-xs font-semibold text-surface-500 uppercase tracking-wide">Type</span>
+                                        <span class="text-sm font-bold text-surface-700">{{ ticket_info.ticket_type or
+                                            'N/A' }}</span>
+                                    </div>
+
+                                    <!-- Category -->
+                                    <div
+                                        class="stat-item rounded-lg p-3 bg-surface-50 border border-surface-100 flex items-center justify-between">
+                                        <span
+                                            class="text-xs font-semibold text-surface-500 uppercase tracking-wide">Category</span>
+                                        <span class="text-sm font-bold text-surface-700">{{ ticket_info.subcategory or
+                                            'N/A' }}</span>
+                                    </div>
+
+                                    <!-- Source -->
+                                    <div
+                                        class="stat-item rounded-lg p-3 bg-surface-50 border border-surface-100 flex items-center justify-between">
+                                        <span
+                                            class="text-xs font-semibold text-surface-500 uppercase tracking-wide">Source</span>
+                                        <span class="text-sm font-bold text-surface-700 flex items-center gap-1.5">
+                                            {% if ticket_info.ticket_source == 'Email' %}
+                                            <i class="ph-bold ph-envelope-simple text-surface-400"></i>
+                                            {% elif ticket_info.ticket_source == 'Phone' %}
+                                            <i class="ph-bold ph-phone text-surface-400"></i>
+                                            {% elif ticket_info.ticket_source == 'Web' %}
+                                            <i class="ph-bold ph-globe text-surface-400"></i>
+                                            {% endif %}
+                                            {{ ticket_info.ticket_source or 'N/A' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <!-- Section 4: Timeline -->
+                            <div class="space-y-4">
+                                <div
+                                    class="flex items-center gap-2 text-xs font-bold text-surface-400 uppercase tracking-wider">
+                                    <i class="ph-bold ph-clock-counter-clockwise text-surface-400"></i> Timeline
+                                </div>
+
+                                <div class="space-y-4">
+                                    <!-- Created -->
+                                    <div
+                                        class="stat-item rounded-lg p-3 bg-surface-50 border border-surface-100 flex items-center gap-3">
+                                        <div
+                                            class="h-3 w-3 rounded-full bg-green-500 ring-2 ring-green-100 flex-shrink-0">
+                                        </div>
+                                        <span
+                                            class="text-xs font-semibold text-green-600 uppercase tracking-wide flex-1">Created</span>
+                                        <span class="text-sm font-bold text-surface-700">{{
+                                            ticket_info.date_ticket_created|format_date }}</span>
+                                    </div>
+                                    <!-- Closed -->
+                                    <div
+                                        class="stat-item rounded-lg p-3 bg-surface-50 border border-surface-100 flex items-center gap-3">
+                                        <div
+                                            class="h-3 w-3 rounded-full bg-surface-400 ring-2 ring-surface-100 flex-shrink-0">
+                                        </div>
+                                        <span
+                                            class="text-xs font-semibold text-surface-500 uppercase tracking-wide flex-1">Closed</span>
+                                        <span class="text-sm font-bold text-surface-700">{{
+                                            ticket_info.date_closed|format_date }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Sidebar Footer -->
+                        <div class="bg-surface-50 px-5 py-3 border-t border-surface-200">
+                            <div class="flex items-center justify-center gap-2">
+                                <i class="ph-fill ph-archive text-surface-400"></i>
+                                <span class="text-xs font-medium text-surface-400">Archived Record</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+</body>
+
+</html>

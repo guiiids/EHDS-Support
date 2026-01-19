@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit New Ticket - iLab Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: {
+                            blue: '#0085D5',
+                            dark: '#0B3F63',
+                            light: '#E6F3FA'
+                        },
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        surface: {
+                            50: '#fafbfc',
+                            100: '#f4f5f7',
+                            200: '#e1e4e8',
+                            300: '#d1d5db',
+                            400: '#959da5',
+                            500: '#6b7280',
+                            600: '#586069',
+                            700: '#444d56',
+                            800: '#2f363d',
+                            900: '#1b1f23',
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06)',
+                        'elevated': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Form styling */
+        .form-input {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-input:focus {
+            border-color: #0085D5;
+            box-shadow: 0 0 0 3px rgba(0, 133, 213, 0.15);
+            outline: none;
+        }
+
+        .form-input:hover:not(:focus) {
+            border-color: #94a3b8;
+        }
+
+        /* Select dropdown styling */
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        /* Textarea resizing */
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* File upload styling */
+        .file-upload-zone {
+            transition: all 0.2s ease;
+        }
+
+        .file-upload-zone:hover {
+            border-color: #0085D5;
+            background-color: rgba(0, 133, 213, 0.02);
+        }
+
+        .file-upload-zone.drag-over {
+            border-color: #0085D5;
+            background-color: rgba(0, 133, 213, 0.05);
+        }
+
+        /* Submit button animation */
+        .submit-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 133, 213, 0.2), 0 4px 6px -2px rgba(0, 133, 213, 0.1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Section divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb 20%, #e5e7eb 80%, transparent);
+        }
+
+        /* Success animation */
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-checkmark {
+            animation: checkmark 0.4s ease-out;
+        }
+
+        /* Loading spinner */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-surface-50 text-surface-800 font-sans antialiased selection:bg-brand-100 selection:text-brand-700">
+
+    <!-- Navbar -->
+    <nav class="bg-white/95 backdrop-blur-sm border-b border-surface-200 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <a href="/" class="group flex items-center gap-3">
+                        <div
+                            class="h-9 w-9 rounded-lg bg-gradient-to-br from-agilent-blue to-agilent-dark flex items-center justify-center shadow-md">
+                            <i class="ph-bold ph-plus-circle text-white text-xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-surface-700 text-base tracking-tight leading-tight">Submit
+                                Ticket</span>
+                            <span class="text-xs text-surface-500 font-medium">iLab Support</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-surface-600 hover:text-agilent-blue hover:bg-agilent-light transition-all duration-200">
+                        <i class="ph-bold ph-arrow-left group-hover:-translate-x-0.5 transition-transform"></i>
+                        Back to Hub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div class="space-y-3">
+                    <!-- Badge -->
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-agilent-light text-agilent-dark font-bold text-sm border border-agilent-blue/20">
+                            <i class="ph-bold ph-ticket"></i>
+                            New Request
+                        </span>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-surface-800 tracking-tight leading-tight">
+                        Submit a Support Ticket
+                    </h1>
+
+                    <!-- Description -->
+                    <p class="text-surface-500 text-base max-w-xl">
+                        Need help? Fill out the form below and our support team will get back to you as soon as
+                        possible.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Main Form - Left Column (2/3) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <form id="ticketForm" class="space-y-6">
+                    <!-- Contact Information Card -->
+                    <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-surface-50 border-b border-surface-200">
+                            <div class="flex items-center gap-2">
+                                <i class="ph-bold ph-user text-agilent-blue"></i>
+                                <h2 class="text-sm font-bold text-surface-700 uppercase tracking-wider">Contact
+                                    Information</h2>
+                            </div>
+                        </div>
+                        <div class="p-6 space-y-5">
+                            <!-- Name -->
+                            <div>
+                                <label for="name" class="block text-sm font-semibold text-surface-700 mb-2">
+                                    Full Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="name" name="name" required
+                                    class="form-input w-full px-4 py-3 border border-surface-200 rounded-lg text-surface-800 placeholder-surface-400"
+                                    placeholder="Enter your full name">
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label for="email" class="block text-sm font-semibold text-surface-700 mb-2">
+                                    Email Address <span class="text-red-500">*</span>
+                                </label>
+                                <input type="email" id="email" name="email" required
+                                    class="form-input w-full px-4 py-3 border border-surface-200 rounded-lg text-surface-800 placeholder-surface-400"
+                                    placeholder="you@institution.edu">
+                            </div>
+
+                            <!-- Organization -->
+                            <div>
+                                <label for="organization" class="block text-sm font-semibold text-surface-700 mb-2">
+                                    Organization / Institution
+                                </label>
+                                <input type="text" id="organization" name="organization"
+                                    class="form-input w-full px-4 py-3 border border-surface-200 rounded-lg text-surface-800 placeholder-surface-400"
+                                    placeholder="Your university or company">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Details Card -->
+                    <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-surface-50 border-b border-surface-200">
+                            <div class="flex items-center gap-2">
+                                <i class="ph-bold ph-info text-agilent-blue"></i>
+                                <h2 class="text-sm font-bold text-surface-700 uppercase tracking-wider">Ticket Details
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="p-6 space-y-5">
+                            <!-- Subject -->
+                            <div>
+                                <label for="subject" class="block text-sm font-semibold text-surface-700 mb-2">
+                                    Subject <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="subject" name="subject" required
+                                    class="form-input w-full px-4 py-3 border border-surface-200 rounded-lg text-surface-800 placeholder-surface-400"
+                                    placeholder="Brief description of your issue">
+                            </div>
+
+                            <!-- Category & Priority Row -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Category -->
+                                <div>
+                                    <label for="category" class="block text-sm font-semibold text-surface-700 mb-2">
+                                        Category <span class="text-red-500">*</span>
+                                    </label>
+                                    <select id="category" name="category" required
+                                        class="form-input form-select w-full px-4 py-3 border border-surface-200 rounded-lg text-surface-800 bg-white">
+                                        <option value="">Select a category</option>
+                                        <option value="billing">Billing & Payments</option>
+                                        <option value="technical">Technical Issue</option>
+                                        <option value="account">Account Management</option>
+                                        <option value="scheduling">Scheduling & Reservations</option>
+                                        <option value="reporting">Reports & Analytics</option>
+                                        <option value="integration">Integration & API</option>
+                                        <option value="training">Training Request</option>
+                                        <option value="feature">Feature Request</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <!-- Priority -->
+                                <div>
+                                    <label for="priority" class="block text-sm font-semibold text-surface-700 mb-2">
+                                        Priority
+                                    </label>
+                                    <select id="priority" name="priority"
+                                        class="form-input form-select w-full px-4 py-3 border border-surface-200 rounded-lg text-surface-800 bg-white">
+                                        <option value="low">Low - General question</option>
+                                        <option value="medium" selected>Medium - Normal issue</option>
+                                        <option value="high">High - Affecting work</option>
+                                        <option value="urgent">Urgent - Critical blocker</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label for="description" class="block text-sm font-semibold text-surface-700 mb-2">
+                                    Description <span class="text-red-500">*</span>
+                                </label>
+                                <textarea id="description" name="description" required
+                                    class="form-input form-textarea w-full px-4 py-3 border border-surface-200 rounded-lg text-surface-800 placeholder-surface-400"
+                                    placeholder="Please provide as much detail as possible about your issue. Include any error messages, steps to reproduce, and what you were trying to accomplish."></textarea>
+                                <p class="mt-2 text-xs text-surface-400">
+                                    <i class="ph ph-info"></i>
+                                    Tip: Include URLs, error messages, and screenshots if applicable
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attachments Card -->
+                    <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-surface-50 border-b border-surface-200">
+                            <div class="flex items-center gap-2">
+                                <i class="ph-bold ph-paperclip text-agilent-blue"></i>
+                                <h2 class="text-sm font-bold text-surface-700 uppercase tracking-wider">Attachments
+                                </h2>
+                                <span class="text-xs text-surface-400 font-normal ml-1">(Optional)</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div id="dropZone"
+                                class="file-upload-zone border-2 border-dashed border-surface-200 rounded-xl p-8 text-center cursor-pointer">
+                                <input type="file" id="fileInput" name="attachments" multiple class="hidden"
+                                    accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip">
+                                <div class="space-y-3">
+                                    <div
+                                        class="h-14 w-14 mx-auto rounded-full bg-surface-100 flex items-center justify-center">
+                                        <i class="ph-light ph-cloud-arrow-up text-3xl text-surface-400"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-surface-600">
+                                            Drop files here or <span class="text-agilent-blue">browse</span>
+                                        </p>
+                                        <p class="text-xs text-surface-400 mt-1">
+                                            Max file size: 10MB. Supported: Images, PDFs, Documents
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- File list -->
+                            <div id="fileList" class="mt-4 space-y-2 hidden">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex items-center justify-between pt-4">
+                        <p class="text-xs text-surface-400">
+                            <span class="text-red-500">*</span> Required fields
+                        </p>
+                        <button type="submit" id="submitBtn"
+                            class="submit-btn flex items-center gap-2 px-8 py-3 rounded-xl text-base font-bold text-white bg-gradient-to-r from-agilent-blue to-agilent-dark hover:from-agilent-dark hover:to-agilent-dark shadow-lg">
+                            <i class="ph-bold ph-paper-plane-right text-lg"></i>
+                            Submit Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sidebar - Right Column (1/3) -->
+            <div class="lg:col-span-1">
+                <div class="sticky top-24 space-y-6">
+
+                    <!-- Quick Tips Card -->
+                    <div class="bg-surface-900 text-white rounded-xl shadow-elevated overflow-hidden">
+                        <div class="px-6 py-4 border-b border-surface-700">
+                            <h3 class="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                                <i class="ph-bold ph-lightbulb"></i>
+                                Quick Tips
+                            </h3>
+                        </div>
+                        <div class="px-6 py-5 space-y-4">
+                            <div class="flex items-start gap-3">
+                                <div class="h-6 w-6 rounded-full bg-agilent-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="text-xs font-bold text-agilent-blue">1</span>
+                                </div>
+                                <p class="text-sm text-surface-300">
+                                    Be specific about the issue you're experiencing
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="h-6 w-6 rounded-full bg-agilent-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="text-xs font-bold text-agilent-blue">2</span>
+                                </div>
+                                <p class="text-sm text-surface-300">
+                                    Include any error messages or screenshots
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="h-6 w-6 rounded-full bg-agilent-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="text-xs font-bold text-agilent-blue">3</span>
+                                </div>
+                                <p class="text-sm text-surface-300">
+                                    Describe steps to reproduce the problem
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="h-6 w-6 rounded-full bg-agilent-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="text-xs font-bold text-agilent-blue">4</span>
+                                </div>
+                                <p class="text-sm text-surface-300">
+                                    Select the appropriate category and priority
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Response Time Card -->
+                    <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
+                            <h3 class="text-sm font-bold text-green-800 uppercase tracking-wider flex items-center gap-2">
+                                <i class="ph-bold ph-clock"></i>
+                                Response Times
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-surface-600">Urgent</span>
+                                <span class="font-bold text-surface-800">< 4 hours</span>
+                            </div>
+                            <div class="section-divider"></div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-surface-600">High</span>
+                                <span class="font-bold text-surface-800">< 8 hours</span>
+                            </div>
+                            <div class="section-divider"></div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-surface-600">Medium</span>
+                                <span class="font-bold text-surface-800">1-2 business days</span>
+                            </div>
+                            <div class="section-divider"></div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-surface-600">Low</span>
+                                <span class="font-bold text-surface-800">2-3 business days</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Need Help Now Card -->
+                    <div class="bg-white rounded-xl shadow-card border border-surface-200 overflow-hidden">
+                        <div class="p-6 text-center space-y-3">
+                            <div class="h-12 w-12 mx-auto rounded-full bg-agilent-light flex items-center justify-center">
+                                <i class="ph-bold ph-chats-circle text-2xl text-agilent-blue"></i>
+                            </div>
+                            <h3 class="font-bold text-surface-800">Need Immediate Help?</h3>
+                            <p class="text-sm text-surface-500">
+                                Check our Knowledge Base for instant answers to common questions.
+                            </p>
+                            <a href="{{ url_for('canned_responses.index') }}"
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-agilent-blue hover:bg-agilent-light transition-colors">
+                                <i class="ph-bold ph-books"></i>
+                                Browse Knowledge Base
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Success Modal (hidden by default) -->
+    <div id="successModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+            <div class="p-8 text-center">
+                <div class="h-20 w-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center success-checkmark">
+                    <i class="ph-bold ph-check text-4xl text-green-600"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-surface-800 mb-2">Ticket Submitted!</h2>
+                <p class="text-surface-500 mb-6">
+                    Your support request has been received. You'll receive a confirmation email shortly with your ticket number.
+                </p>
+                <div class="space-y-3">
+                    <a href="/"
+                        class="block w-full px-6 py-3 rounded-xl text-base font-bold text-white bg-gradient-to-r from-agilent-blue to-agilent-dark shadow-lg hover:shadow-xl transition-all">
+                        Return to Hub
+                    </a>
+                    <button onclick="closeSuccessModal()"
+                        class="block w-full px-6 py-3 rounded-xl text-base font-medium text-surface-600 hover:bg-surface-100 transition-colors">
+                        Submit Another Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File upload handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        let uploadedFiles = [];
+
+        // Click to open file browser
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', () => {
+            handleFiles(fileInput.files);
+        });
+
+        function handleFiles(files) {
+            for (const file of files) {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`File "${file.name}" exceeds 10MB limit.`);
+                    continue;
+                }
+                uploadedFiles.push(file);
+            }
+            renderFileList();
+        }
+
+        function renderFileList() {
+            if (uploadedFiles.length === 0) {
+                fileList.classList.add('hidden');
+                return;
+            }
+
+            fileList.classList.remove('hidden');
+            fileList.innerHTML = uploadedFiles.map((file, index) => `
+                <div class="flex items-center gap-3 p-3 bg-surface-50 rounded-lg border border-surface-200">
+                    <div class="h-10 w-10 rounded-lg bg-agilent-light flex items-center justify-center flex-shrink-0">
+                        <i class="ph ph-file text-agilent-blue text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-surface-700 truncate">${file.name}</p>
+                        <p class="text-xs text-surface-400">${formatFileSize(file.size)}</p>
+                    </div>
+                    <button type="button" onclick="removeFile(${index})" class="text-surface-400 hover:text-red-500 transition-colors p-1">
+                        <i class="ph-bold ph-x text-lg"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderFileList();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Form submission
+        const form = document.getElementById('ticketForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successModal = document.getElementById('successModal');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="loading-spinner h-5 w-5" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+            `;
+
+            // Simulate API call (replace with actual submission)
+            setTimeout(() => {
+                // Show success modal
+                successModal.classList.remove('hidden');
+
+                // Reset form
+                form.reset();
+                uploadedFiles = [];
+                renderFileList();
+
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <i class="ph-bold ph-paper-plane-right text-lg"></i>
+                    Submit Ticket
+                `;
+            }, 1500);
+        });
+
+        function closeSuccessModal() {
+            successModal.classList.add('hidden');
+        }
+
+        // Close modal on backdrop click
+        successModal.addEventListener('click', (e) => {
+            if (e.target === successModal) {
+                closeSuccessModal();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

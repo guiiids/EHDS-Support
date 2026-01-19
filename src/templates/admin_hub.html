@@ -154,32 +154,26 @@
                 <p class="text-sm font-light text-slate-500">Run LLM-based grounding checks on bot responses.</p>
             </a>
 
-            <!-- Card: Query History -->
-            <div
-                class="relative group bg-slate-50 border border-slate-100 rounded-xl p-10 shadow-sm opacity-60 grayscale flex flex-col items-center text-center cursor-not-allowed">
-                <span
-                    class="absolute top-4 right-4 bg-rose-50 text-rose-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-rose-100">
-                    In Development
-                </span>
-                <i class="ph-light ph-plus-circle text-6xl text-slate-400 mb-6"></i>
-                <h3 class="text-lg font-condensed font-bold text-slate-500 uppercase tracking-wide mb-2">Submit New
+            <!-- Card: Submit New Ticket -->
+            <a href="/submit-ticket"
+                class="group bg-white border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center ring-1 ring-slate-100 hover:ring-agilent-blue/20">
+                <i
+                    class="ph-light ph-plus-circle text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
+                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">Submit New
                     Ticket
                 </h3>
-                <p class="text-sm font-light text-slate-400">Review past conversations and user sessions.</p>
-            </div>
+                <p class="text-sm font-light text-slate-500">Create a new support request or inquiry.</p>
+            </a>
 
-            <!-- Card: User Feedback -->
-            <div
-                class="relative group bg-slate-50 border border-slate-100 rounded-xl p-10 shadow-sm opacity-60 grayscale flex flex-col items-center text-center cursor-not-allowed">
-                <span
-                    class="absolute top-4 right-4 bg-rose-50 text-rose-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-rose-100">
-                    In Development
-                </span>
-                <i class="ph-light ph-chart-line-up text-6xl text-slate-400 mb-6"></i>
-                <h3 class="text-lg font-condensed font-bold text-slate-500 uppercase tracking-wide mb-2">Analytics
+            <!-- Card: Analytics -->
+            <a href="{{ url_for('analytics.dashboard') }}"
+                class="group bg-white border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center ring-1 ring-slate-100 hover:ring-agilent-blue/20">
+                <i
+                    class="ph-light ph-chart-pie text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
+                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">Customer Analytics
                 </h3>
-                <p class="text-sm font-light text-slate-400">Analyze user ratings and qualitative feedback.</p>
-            </div>
+                <p class="text-sm font-light text-slate-500">Analyze customer support patterns, SLA performance, and trends.</p>
+            </a>
 
             <!-- Card: Finances -->
             <a href="#"

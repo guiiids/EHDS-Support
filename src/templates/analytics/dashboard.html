@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" x-data="dashboardData()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Analytics | Agilent iLab</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@100;300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Charts & Alpine -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        condensed: ['Roboto Condensed', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: {
+                            blue: '#0085D5',
+                            dark: '#0B3F63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .chart-container {
+            min-height: 350px;
+        }
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-700 min-h-screen font-sans">
+
+    <!-- Header -->
+    <header class="w-full flex items-center justify-between px-8 py-4 border-b border-slate-200 bg-white sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-6">
+            <a href="/" class="flex items-center gap-2 text-agilent-blue hover:text-agilent-dark transition-colors">
+                <i class="ph-bold ph-arrow-left text-lg"></i>
+                <span class="font-condensed font-bold uppercase tracking-tight">Back to Hub</span>
+            </a>
+            <div class="h-6 w-px bg-slate-200"></div>
+            <h1 class="text-xl font-thin text-slate-800 tracking-tight flex items-center gap-3">
+                <i class="ph-light ph-chart-line-up text-2xl text-agilent-blue"></i>
+                Customer Analytics Dashboard
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-1.5 border border-slate-200">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Time Period:</span>
+                <select x-model="range" @change="reloadData()" class="bg-transparent text-sm font-bold text-slate-600 focus:outline-none cursor-pointer">
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                    <option value="90d">Last Quarter</option>
+                    <option value="12m">Last 12 Months</option>
+                    <option value="2y">Last 2 Years</option>
+                    <option value="5y">Last 5 Years</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
+            <button @click="reloadData()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                <i class="ph ph-arrows-clockwise" :class="loading ? 'animate-spin' : ''"></i>
+                Refresh Data
+            </button>
+            <div class="h-8 w-8 bg-agilent-blue rounded-full text-white flex items-center justify-center font-condensed font-bold text-sm">
+                GM
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 space-y-8" x-cloak>
+        
+        <!-- Error Alert -->
+        <template x-if="error">
+            <div class="bg-rose-50 border border-rose-100 rounded-xl p-4 flex items-center gap-3 text-rose-600">
+                <i class="ph-fill ph-warning-circle text-xl"></i>
+                <div class="flex-grow">
+                    <p class="text-sm font-bold">Data Loading Failed</p>
+                    <p class="text-xs opacity-80" x-text="error"></p>
+                </div>
+                <button @click="reloadData()" class="text-xs font-bold uppercase tracking-wider underline">Retry</button>
+            </div>
+        </template>
+
+        <!-- Section: KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <template x-for="(kpi, index) in kpis" :key="index">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow" :class="loading ? 'loading-shimmer' : ''">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-2 rounded-xl bg-slate-50 text-agilent-blue">
+                            <i :class="'ph ph-' + kpi.icon + ' text-xl'"></i>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400" x-text="kpi.label"></span>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="text-3xl font-condensed font-bold text-slate-800" x-text="loading ? '...' : kpi.value"></h4>
+                        <p class="text-xs text-slate-400 font-medium" x-text="kpi.subtext"></p>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Section: Core Distribution -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Top Customers by Volume -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Top Customers</h3>
+                        <p class="text-xs text-slate-400">By total historical ticket volume</p>
+                    </div>
+                    <i class="ph-light ph-users-three text-2xl text-slate-300"></i>
+                </div>
+                <div id="volumeChart" class="flex-grow chart-container"></div>
+            </div>
+
+            <!-- Customer Activity Timeline -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Activity Trends</h3>
+                        <p class="text-xs text-slate-400">Monthly ticket volume for top 5 customers</p>
+                    </div>
+                    <i class="ph-light ph-chart-line text-2xl text-slate-300"></i>
+                </div>
+                <div id="timelineChart" class="flex-grow chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Section: Detailed Categorization -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Issue Category Breakdown -->
+            <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                 <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Issue Categories</h3>
+                        <p class="text-xs text-slate-400">Distribution of top technical categories</p>
+                    </div>
+                    <i class="ph-light ph-tag text-2xl text-slate-300"></i>
+                </div>
+                <div id="categoryChart" class="chart-container"></div>
+            </div>
+
+            <!-- Source Distribution -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Submission Sources</h3>
+                        <p class="text-xs text-slate-400">Where tickets come from</p>
+                    </div>
+                    <i class="ph-light ph-envelope-simple text-2xl text-slate-300"></i>
+                </div>
+                <div id="sourceChart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Section: Performance & Satisfaction -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Average Performance -->
+            <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                 <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Performance SLA (Hours)</h3>
+                        <p class="text-xs text-slate-400">Avg response vs resolution time by customer</p>
+                    </div>
+                    <i class="ph-light ph-clock text-2xl text-slate-300"></i>
+                </div>
+                <div id="performanceChart" class="chart-container"></div>
+            </div>
+
+            <!-- Satisfaction Risk -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Satisfaction Risk</h3>
+                        <p class="text-xs text-slate-400">Reopened tickets % per customer</p>
+                    </div>
+                    <i class="ph-light ph-warning-circle text-2xl text-rose-400"></i>
+                </div>
+                <div id="satisfactionChart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Section: Segmentation & Churn -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Loyalty Segments -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Loyalty Segments</h3>
+                        <p class="text-xs text-slate-400">Customer base maturity</p>
+                    </div>
+                    <i class="ph-light ph-medal text-2xl text-slate-300"></i>
+                </div>
+                <div id="loyaltyChart" class="flex-grow chart-container"></div>
+            </div>
+
+            <!-- Churn Analysis Table -->
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div>
+                        <h3 class="text-lg font-condensed font-bold text-slate-800 uppercase tracking-wide">Churn Analysis</h3>
+                        <p class="text-xs text-slate-400">Customers with no activity for 90+ days</p>
+                    </div>
+                    <button class="px-3 py-1.5 text-xs font-bold bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors uppercase tracking-wider text-slate-600">Export CSV</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="bg-slate-50/50 text-slate-400 font-condensed font-bold uppercase tracking-wider text-[10px]">
+                                <th class="px-8 py-4 text-center">Customer Organization</th>
+                                <th class="px-8 py-4 text-center">Last Interaction</th>
+                                <th class="px-8 py-4 text-center">Days Idle</th>
+                                <th class="px-8 py-4 text-center">Total Tickets</th>
+                                <th class="px-8 py-4 text-center">Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <template x-for="customer in churnData" :key="customer.customer">
+                                <tr class="hover:bg-slate-50 transition-colors group">
+                                    <td class="px-8 py-4 font-medium text-slate-700" x-text="customer.customer"></td>
+                                    <td class="px-8 py-4 text-slate-500 text-center" x-text="customer.last_ticket"></td>
+                                    <td class="px-8 py-4 text-center font-bold" x-text="customer.days_idle"></td>
+                                    <td class="px-8 py-4 text-slate-500 text-center" x-text="customer.total_tickets"></td>
+                                    <td class="px-8 py-4 text-center">
+                                        <span :class="{
+                                            'bg-rose-50 text-rose-600 border-rose-100': customer.days_idle > 365,
+                                            'bg-amber-50 text-amber-600 border-amber-100': customer.days_idle <= 365 && customer.days_idle > 180,
+                                            'bg-blue-50 text-blue-600 border-blue-100': customer.days_idle <= 180
+                                        }" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                                        x-text="customer.days_idle > 365 ? 'Critical' : (customer.days_idle > 180 ? 'At Risk' : 'Dormant')"></span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-10 text-slate-400 text-[10px] font-condensed uppercase tracking-[0.2em]">
+        © Agilent Technologies, Inc. 2026 • EHDS-Support Analytics Engine
+    </footer>
+
+    <script>
+        function dashboardData() {
+            return {
+                loading: true,
+                error: null,
+                range: 'all',
+                kpis: [
+                    { label: 'Total Customers', value: '0', subtext: 'Lifetime unique users', icon: 'users', key: 'total_customers' },
+                    { label: 'Active (30d)', value: '0', subtext: 'Interaction last month', icon: 'activity', key: 'active_customers' },
+                    { label: 'Avg Response', value: '0', subtext: 'Hours until first action', icon: 'chat-centered-text', key: 'avg_response_hours' },
+                    { label: 'Avg Resolution', value: '0', subtext: 'Hours to closure', icon: 'check-circle', key: 'avg_resolution_hours' },
+                    { label: 'Tickets Total', value: '0', subtext: 'Database volume', icon: 'ticket', key: 'total_tickets' }
+                ],
+                churnData: [],
+                charts: {},
+
+                async init() {
+                    await this.reloadData();
+                },
+
+                async reloadData() {
+                    this.loading = true;
+                    this.error = null;
+                    try {
+                        const r = this.range;
+                        // Parallel fetch for speed
+                        const responses = await Promise.all([
+                            fetch(`/analytics/api/summary?range=${r}`),
+                            fetch(`/analytics/api/tickets-by-customer?range=${r}`),
+                            fetch(`/analytics/api/customer-activity?range=${r}`),
+                            fetch(`/analytics/api/performance-by-customer?range=${r}`),
+                            fetch(`/analytics/api/reopened-by-customer?range=${r}`),
+                            fetch(`/analytics/api/churn-at-risk?range=${r}`),
+                            fetch(`/analytics/api/category-breakdown?range=${r}`),
+                            fetch(`/analytics/api/source-distribution?range=${r}`),
+                            fetch(`/analytics/api/loyalty-metrics?range=${r}`)
+                        ]);
+
+                        // Check for errors
+                        for (let r of responses) {
+                            if (!r.ok) {
+                                const errData = await r.json();
+                                throw new Error(errData.error || `HTTP error! status: ${r.status}`);
+                            }
+                        }
+
+                        const [summary, volume, activity, performance, satisfaction, churn, category, source, loyalty] = await Promise.all(responses.map(r => r.json()));
+
+                        // Update KPIs
+                        this.kpis.forEach(kpi => {
+                            let val = summary[kpi.key];
+                            if (kpi.key.includes('hours')) val += ' hrs';
+                            kpi.value = val;
+                        });
+
+                        this.churnData = churn;
+
+                        // Render Charts
+                        this.renderVolumeChart(volume);
+                        this.renderTimelineChart(activity);
+                        this.renderPerformanceChart(performance);
+                        this.renderSatisfactionChart(satisfaction);
+                        this.renderCategoryChart(category);
+                        this.renderSourceChart(source);
+                        this.renderLoyaltyChart(loyalty);
+
+                    } catch (e) {
+                        console.error('Failed to load dashboard data', e);
+                        this.error = e.message;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                renderVolumeChart(data) {
+                    const options = {
+                        series: [{ name: 'Tickets', data: data.map(d => d.count) }],
+                        chart: { type: 'bar', height: 350, toolbar: { show: false }, fontBold: true },
+                        plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '60%' } },
+                        colors: ['#0085D5'],
+                        xaxis: { categories: data.map(d => d.customer) },
+                        dataLabels: { enabled: false },
+                        tooltip: { theme: 'light' }
+                    };
+                    this.renderOrUpdate('volumeChart', options);
+                },
+
+                renderTimelineChart(series) {
+                    const options = {
+                        series: series,
+                        chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
+                        dataLabels: { enabled: false },
+                        stroke: { curve: 'smooth', width: 2 },
+                        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100, 100] } },
+                        xaxis: { type: 'category' },
+                        colors: ['#0085D5', '#0B3F63', '#64748b', '#94a3b8', '#cbd5e1'],
+                        legend: { position: 'top', horizontalAlign: 'right', fontFamily: 'Roboto Condensed' }
+                    };
+                    this.renderOrUpdate('timelineChart', options);
+                },
+
+                renderPerformanceChart(data) {
+                    const options = {
+                        series: [
+                            { name: 'Resolution Time', data: data.resolution.map(d => d.value) },
+                            { name: 'Response Time', data: data.response.map(d => d.value) }
+                        ],
+                        chart: { type: 'bar', height: 350, toolbar: { show: false } },
+                        plotOptions: { bar: { horizontal: false, columnWidth: '55%', borderRadius: 4 } },
+                        dataLabels: { enabled: false },
+                        stroke: { show: true, width: 2, colors: ['transparent'] },
+                        xaxis: { categories: data.resolution.map(d => d.customer) },
+                        fill: { opacity: 1 },
+                        colors: ['#0B3F63', '#0085D5'],
+                        tooltip: { y: { formatter: (val) => val + " hours" } },
+                        legend: { position: 'top', horizontalAlign: 'right' }
+                    };
+                    this.renderOrUpdate('performanceChart', options);
+                },
+
+                renderSatisfactionChart(data) {
+                    const options = {
+                        series: data.map(d => d.percentage),
+                        chart: { type: 'radialBar', height: 350 },
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: { fontSize: '14px', fontFamily: 'Roboto Condensed' },
+                                    value: { fontSize: '18px', formatter: (val) => val + '%' },
+                                    total: { show: true, label: 'Highest Risk', formatter: () => data[0]?.customer || 'N/A' }
+                                }
+                            }
+                        },
+                        labels: data.map(d => d.customer),
+                        colors: ['#f43f5e', '#fbbf24', '#0085D5'],
+                    };
+                    this.renderOrUpdate('satisfactionChart', options);
+                },
+
+                renderCategoryChart(data) {
+                     const options = {
+                        series: [{ name: 'Issues', data: data.map(d => d.count) }],
+                        chart: { type: 'bar', height: 350, toolbar: { show: false } },
+                        plotOptions: { bar: { horizontal: false, borderRadius: 4 } },
+                        colors: ['#1991d9'],
+                        xaxis: { categories: data.map(d => d.category) },
+                        dataLabels: { enabled: false }
+                    };
+                    this.renderOrUpdate('categoryChart', options);
+                },
+
+                renderSourceChart(data) {
+                    const options = {
+                        series: data.map(d => d.count),
+                        chart: { type: 'donut', height: 350 },
+                        labels: data.map(d => d.source),
+                        colors: ['#0B3F63', '#0085D5', '#64748b'],
+                        legend: { position: 'bottom' }
+                    };
+                    this.renderOrUpdate('sourceChart', options);
+                },
+
+                renderLoyaltyChart(data) {
+                    const options = {
+                        series: [{ name: 'Customers', data: data.map(d => d.count) }],
+                        chart: { type: 'bar', height: 350, toolbar: { show: false } },
+                        plotOptions: { bar: { borderRadius: 4 } },
+                        xaxis: { categories: data.map(d => d.segment) },
+                        colors: ['#0085D5']
+                    };
+                    this.renderOrUpdate('loyaltyChart', options);
+                },
+
+                renderOrUpdate(id, options) {
+                    if (this.charts[id]) {
+                        this.charts[id].updateOptions(options);
+                    } else {
+                        const el = document.querySelector("#" + id);
+                        if (el) {
+                            this.charts[id] = new ApexCharts(el, options);
+                            this.charts[id].render();
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

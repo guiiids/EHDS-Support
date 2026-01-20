@@ -32,6 +32,43 @@ def extract_category_from_breadcrumbs(breadcrumbs):
         return parts[1]
     return None
 
+def build_navigation():
+    """Build navigation structure from articles grouped by category"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT id, article_title, breadcrumbs
+        FROM help_articles
+        ORDER BY breadcrumbs, article_title
+    """)
+    articles = cursor.fetchall()
+    
+    # Group articles by category
+    categories = {}
+    for article in articles:
+        category = extract_category_from_breadcrumbs(article['breadcrumbs'])
+        if not category:
+            category = "General"
+        
+        if category not in categories:
+            categories[category] = []
+        
+        categories[category].append({
+            'title': article['article_title'],
+            'href': url_for('help_articles.docs_article', article_id=article['id'])
+        })
+    
+    # Convert to navigation structure
+    navigation = []
+    for category, links in sorted(categories.items()):
+        navigation.append({
+            'title': category,
+            'links': links
+        })
+    
+    return navigation
+
 def generate_article_slug(article):
     """
     Generate SEO-friendly URL slug from article breadcrumbs and title.
@@ -202,13 +239,101 @@ def help_detail(article_slug):
     else:
         article_dict['intended_users_list'] = []
     
-    return render_template('help_detail.html', article=article_dict)
+    # Build navigation for sidebar
+    navigation = build_navigation()
+    
+    return render_template(
+        'help_detail.html', 
+        article=article_dict,
+        navigation=navigation
+    )
 
 @bp.route('/search')
 def search():
     """Search endpoint - redirects to help_list with query"""
     query = request.args.get('q', '')
     return redirect(url_for('help_articles.help_list', q=query))
+
+# ============================================================================
+# HELP SITE V2 - Documentation-Style Layout
+# ============================================================================
+
+@bp.route('/docs')
+def docs_index():
+    """Documentation home page (v2 - docs style)"""
+    navigation = build_navigation()
+    return render_template(
+        'help_docs.html',
+        navigation=navigation,
+        article=None,
+        current_path=url_for('help_articles.docs_index')
+    )
+
+@bp.route('/docs/<int:article_id>')
+def docs_article(article_id):
+    """Display single article in documentation layout (v2 - docs style)"""
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get current article
+    cursor.execute("SELECT * FROM help_articles WHERE id = ?", (article_id,))
+    article = cursor.fetchone()
+    
+    if not article:
+        return "Article not found", 404
+    
+    article_dict = dict(article)
+    
+    # Get previous article
+    cursor.execute("SELECT id, article_title FROM help_articles WHERE id < ? ORDER BY id DESC LIMIT 1", (article_id,))
+    prev_article = cursor.fetchone()
+    prev_article_dict = dict(prev_article) if prev_article else None
+    
+    # Get next article
+    cursor.execute("SELECT id, article_title FROM help_articles WHERE id > ? ORDER BY id ASC LIMIT 1", (article_id,))
+    next_article = cursor.fetchone()
+    next_article_dict = dict(next_article) if next_article else None
+    
+    # Build navigation
+    navigation = build_navigation()
+    current_path = url_for('help_articles.docs_article', article_id=article_id)
+    
+    return render_template(
+        'help_docs.html',
+        navigation=navigation,
+        article=article_dict,
+        prev_article=prev_article_dict,
+        next_article=next_article_dict,
+        current_path=current_path
+    )
+
+@bp.route('/api/search')
+def api_search():
+    """API endpoint for search functionality (v2)"""
+    query = request.args.get('q', '').strip()
+    
+    if not query:
+        return jsonify([])
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Use FTS for search
+    cursor.execute("""
+        SELECT help_articles.id, help_articles.article_title, help_articles.breadcrumbs
+        FROM help_articles
+        INNER JOIN help_articles_fts ON help_articles.id = help_articles_fts.rowid
+        WHERE help_articles_fts MATCH ?
+        LIMIT 10
+    """, (query,))
+    
+    results = cursor.fetchall()
+    
+    # Convert to JSON-serializable format
+    results_list = [dict(row) for row in results]
+    
+    return jsonify(results_list)
 
 @bp.app_template_filter('article_url')
 def article_url_filter(article):

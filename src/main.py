@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request, send_file, url_for
 from markupsafe import Markup
 
-from .db import get_db, close_db
+from .db import get_db, close_db, get_db_path
 
 # Load environment variables
 load_dotenv()
@@ -893,11 +893,12 @@ def status_color(status):
 
 if __name__ == '__main__':
     # Check database exists before starting
-    if not Path(DB_PATH).exists():
-        logger.error(f"Database {DB_PATH} not found!")
+    db_path = get_db_path()
+    if not db_path.exists():
+        logger.error(f"Database {db_path} not found!")
         logger.error("Run migration first: python migrate_to_sqlite.py")
         exit(1)
     
     logger.info(f"Starting development server on port 5525")
-    logger.info(f"Using database: {DB_PATH}")
+    logger.info(f"Using database: {db_path}")
     app.run(debug=True, port=5525)
